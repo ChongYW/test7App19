@@ -71,6 +71,4 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-// Stop at creating a simple fold menu and mian area by using Bootstrap.
-// C:\Users\User\Desktop\Work+\Exapancific Sdn Bhd\Project+\Project 2\test7\test7App19\views\admin\partials\navbar.ejs
-// C:\Users\User\Desktop\Work+\Exapancific Sdn Bhd\Project+\Project 2\test7\test7App19\views\test.ejs
+// Stop at create the order list and edit(Same as user list).

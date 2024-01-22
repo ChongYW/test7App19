@@ -1,6 +1,7 @@
 const User = require('../../models/userModel');
 const passport = require('passport');
 const validator = require('validator');
+const mongoose = require('mongoose');
 
 // const createUser = async (req, res) => {
 //     try {
@@ -124,7 +125,47 @@ const profilePage = (req, res) =>{
   res.render('admin/profile');
 }
 
-const userListPage = async (req, res) =>{
+// const userListPage = async (req, res) =>{
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const perPage = 10; // Adjust this value based on your preference
+//     const skip = (page - 1) * perPage;
+
+//     let query = {};
+//     const searchQuery = req.query.search;
+//     const searchField = req.query.searchField;
+
+//     if (searchQuery && searchField) {
+//       // If there's a search query and a selected search field, filter users accordingly
+//       query = {
+//         [searchField]: new RegExp(searchQuery, 'i'), // 'i' makes it case-insensitive
+//       };
+//     }
+
+//     const users = await User.find(query).skip(skip).limit(perPage);
+
+//     // Calculate pagination links
+//     const totalUsers = await User.countDocuments(query);
+//     const totalPages = Math.ceil(totalUsers / perPage);
+//     const pagination = {
+//       prev: page > 1 ? `/admin/userList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+//       next: page < totalPages ? `/admin/userList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+//       current: page,
+//       totalPages: totalPages,
+//     };
+
+//     if (users.length === 0) {
+//       req.flash('warning', `No user found based on the input "${searchQuery}" for the field "${searchField}".`);
+//     }
+
+//     res.render('admin/userList', { users, pagination, searchQuery, searchField });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// }
+
+const userListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const perPage = 10; // Adjust this value based on your preference
@@ -136,9 +177,30 @@ const userListPage = async (req, res) =>{
 
     if (searchQuery && searchField) {
       // If there's a search query and a selected search field, filter users accordingly
-      query = {
-        [searchField]: new RegExp(searchQuery, 'i'), // 'i' makes it case-insensitive
-      };
+      switch (searchField) {
+        case 'username':
+        case 'phone':
+        case 'email':
+        case 'role':
+          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          break;
+        case 'createdAt':
+          // Assuming createdAt is a Date field
+          query = { createdAt: { $gte: new Date(searchQuery) } };
+          break;
+        case '_id':
+          // Check if the entered value is a valid ObjectId
+          if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+            query = { _id: searchQuery };
+          } else {
+            req.flash('warning', 'Invalid user ID format.');
+            return res.redirect('/admin/userList');
+          }
+          break;
+        default:
+          req.flash('warning', 'Invalid search field.');
+          return res.redirect('/admin/userList');
+      }
     }
 
     const users = await User.find(query).skip(skip).limit(perPage);
@@ -153,7 +215,7 @@ const userListPage = async (req, res) =>{
       totalPages: totalPages,
     };
 
-    if (users.length === 0) {
+    if (users.length === 0 && searchQuery) {
       req.flash('warning', `No user found based on the input "${searchQuery}" for the field "${searchField}".`);
     }
 
@@ -162,7 +224,8 @@ const userListPage = async (req, res) =>{
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-}
+};
+
 
 const editUserPage = async (req, res) =>{
   try {

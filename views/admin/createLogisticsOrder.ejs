@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('./partials/header'); %>
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <div class="container mt-5">
+
+    <div class="border rounded p-5">
+        
+        <h1>Create Logistics Order</h1>
+
+        <form action="/admin/createLogisticsOrder" method="POST">
+        
+            <div class="mb-3">
+              <label for="description" class="form-label">Description:</label>
+              <textarea class="form-control" id="description" name="description"></textarea>
+            </div>
+        
+            <div class="mb-3">
+              <label for="address1" class="form-label">Address Line 1:</label>
+              <input type="text" class="form-control" id="address1" name="address1" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="address2" class="form-label">Address Line 2:</label>
+              <input type="text" class="form-control" id="address2" name="address2">
+            </div>
+        
+            <div class="mb-3">
+              <label for="city" class="form-label">City:</label>
+              <input type="text" class="form-control" id="city" name="city" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="postalCode" class="form-label">Postal Code:</label>
+              <input type="text" class="form-control" id="postalCode" name="postalCode" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="country" class="form-label">Country:</label>
+              <input type="text" class="form-control" id="country" name="country" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="paymentStatus" class="form-label">Payment Status:</label>
+              <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="paymentAmount" class="form-label">Payment Amount:</label>
+              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" required>
+            </div>
+        
+            <div class="mb-3">
+              <label for="deliveryType" class="form-label">Delivery Type:</label>
+              <input type="text" class="form-control" id="deliveryType" name="deliveryType" required>
+            </div>
+        
+            <button type="submit" class="btn btn-primary">Create Order</button>
+          </form>
+
+    </div>
+    
+  </div>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body>
+</html>
