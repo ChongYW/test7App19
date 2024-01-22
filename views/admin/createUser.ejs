@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('./partials/header'); %>
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <div class="container mt-5">
+
+    <div class="border rounded p-5">
+        <h2 class="mb-4">Create User</h2>
+
+        <form id="createUserForm" action="/admin/createUser" method="post">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" value="<%= typeof username !== 'undefined' ? username : '' %>" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" value="<%= typeof password !== 'undefined' ? password : '' %>" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone:</label>
+                <input type="number" class="form-control" id="phone" name="phone" value="<%= typeof phone !== 'undefined' ? phone : '' %>" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="role" class="form-label">Role:</label>
+                <select class="form-select" id="role" name="role" value="<%= typeof role !== 'undefined' ? role : '' %>" required>
+                    <option value="userB" selected>User B</option>
+                    <option value="userC">User C</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="status" class="form-label">Status:</label>
+                <select class="form-select" id="status" name="status" value="<%= typeof status !== 'undefined' ? status : '' %>" required>
+                    <option value="pending" selected>Pending</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="blacklist">Blacklist</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create User</button>
+        </form>
+    </div>
+    
+  </div>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body>
+</html>

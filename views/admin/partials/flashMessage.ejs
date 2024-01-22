@@ -1,0 +1,24 @@
+<!-- flash-messages.ejs -->
+<% if (messages && messages.success && messages.success.length > 0) { %>
+    <div class="border rounded p-5 m-5" style="color: green;">
+        <% messages.success.forEach(success => { %>
+            <p><%= success %></p>
+        <% }); %>
+    </div>
+<% } %>
+  
+<% if (messages && messages.error && messages.error.length > 0) { %>
+    <div class="border rounded p-5 m-5" style="color: red;">
+        <% messages.error.forEach(error => { %>
+            <p><%= error %></p>
+        <% }); %>
+    </div>
+<% } %>
+  
+  <% if (messages && messages.warning && messages.warning.length > 0) { %>
+    <div class="border rounded p-5 m-5" style="color: goldenrod;">
+        <% messages.warning.forEach(warning => { %>
+            <p><%= warning %></p>
+        <% }); %>
+    </div>
+<% } %>

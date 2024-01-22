@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('./partials/header'); %>
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <div class="container mt-5">
+
+    <div class="border rounded p-3">
+        <h2 class="mb-3">User List</h2>
+
+        <form action="/admin/userList" method="get" class="mb-3">
+            <div class="input-group">
+                <label for="search" class="visually-hidden">Search:</label>
+                <input type="text" id="search" name="search" class="form-control" placeholder="Enter search term">
+                
+                <label for="searchField" class="visually-hidden">Search By:</label>
+                <select id="searchField" name="searchField" class="form-select">
+                    <option value="username">Username</option>
+                    <option value="phone">Phone</option>
+                    <option value="email">Email</option>
+                    <option value="role">Role</option>
+                    <option value="createdAt">Created At</option>
+                    <option value="_id">User ID</option>
+                </select>
+                
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+        <!-- Use Bootstrap table classes -->
+        <div class="table-responsive">
+          <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <!-- Add NO. column -->
+                  <th>NO.</th>
+                  <th>Username</th>
+                  <th>Password</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach((user, index) => { %>
+                  <tr>
+                    <!-- Display the row number in the NO. column -->
+                    <td><%= index + 1 %></td>
+                    <td><%= user.username %></td>
+                    <td><%= user.password %></td>
+                    <td><%= user.phone %></td>
+                    <td><%= user.email %></td>
+                    <td><%= user.role %></td>
+                    <td><%= user.status %></td>
+                    <td>
+                      <!-- Use Bootstrap buttons -->
+                      <a href="/admin/userList/edit/<%= user._id %>" class="btn btn-primary btn-sm">Edit</a>
+                      <a href="/admin/userList/delete/<%= user._id %>" class="btn btn-danger btn-sm" onsubmit="return confirm(`Are you sure delete ${user.username}?`)">Delete</a>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-3">
+          <% if (pagination.prev) { %>
+            <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
+          <% } %>
+
+          <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
+
+          <% if (pagination.next) { %>
+            <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
+          <% } %>
+        </div>
+    </div>
+    
+  </div>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body>
+</html>
