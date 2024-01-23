@@ -16,7 +16,7 @@ const logisticsOrderSchema = new mongoose.Schema({
   deliveryType: { type: String, required: true }
 },{
     timestamps: true
-  });
+});
 
 const LogisticsOrderModel = mongoose.model('LogisticsOrder', logisticsOrderSchema);
 

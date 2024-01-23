@@ -2,6 +2,7 @@ const User = require('../../models/userModel');
 const passport = require('passport');
 const validator = require('validator');
 const mongoose = require('mongoose');
+const paginate = require('express-paginate');
 
 // const createUser = async (req, res) => {
 //     try {
@@ -178,16 +179,6 @@ const userListPage = async (req, res) => {
     if (searchQuery && searchField) {
       // If there's a search query and a selected search field, filter users accordingly
       switch (searchField) {
-        case 'username':
-        case 'phone':
-        case 'email':
-        case 'role':
-          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
-          break;
-        case 'createdAt':
-          // Assuming createdAt is a Date field
-          query = { createdAt: { $gte: new Date(searchQuery) } };
-          break;
         case '_id':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
@@ -197,29 +188,70 @@ const userListPage = async (req, res) => {
             return res.redirect('/admin/userList');
           }
           break;
+          
+        case 'username':
+        case 'phone':
+        case 'email':
+        case 'role':
+        case 'status':
+          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          break;
+
+        case 'createdAt':
+        case 'updatedAt': // Add support for updatedAt
+          const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
+          const startDate = new Date(searchQuery);
+          
+          // Check if startDate is a valid date
+          if (isNaN(startDate.getTime())) {
+            req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+            return res.redirect('/admin/userList');
+          }
+    
+          // Set the time to the beginning of the day
+          startDate.setHours(0, 0, 0, 0);
+    
+          // Create the endDate by setting the time to the end of the day
+          const endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+    
+          query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
+          break;
+        
         default:
           req.flash('warning', 'Invalid search field.');
           return res.redirect('/admin/userList');
       }
     }
+    
 
-    const users = await User.find(query).skip(skip).limit(perPage);
+    const [users, itemCount] = await Promise.all([
+      User.find(query).skip(skip).limit(perPage).exec(),
+      User.countDocuments(query),
+    ]);
 
-    // Calculate pagination links
-    const totalUsers = await User.countDocuments(query);
-    const totalPages = Math.ceil(totalUsers / perPage);
-    const pagination = {
-      prev: page > 1 ? `/admin/userList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-      next: page < totalPages ? `/admin/userList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-      current: page,
-      totalPages: totalPages,
-    };
+    const totalPages = Math.ceil(itemCount / perPage);
 
-    if (users.length === 0 && searchQuery) {
-      req.flash('warning', `No user found based on the input "${searchQuery}" for the field "${searchField}".`);
-    }
+    // Paginate middleware to attach pagination properties to the response object
+    const middleware = paginate.middleware(perPage, totalPages);
 
-    res.render('admin/userList', { users, pagination, searchQuery, searchField });
+    // Invoke middleware to add pagination properties to res.locals
+    middleware(req, res, () => {
+      // Calculate pagination links based on res.locals.paginate
+      const pagination = {
+        prev: res.locals.paginate.hasPreviousPages ? `/admin/userList?page=${res.locals.paginate.prev}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+        next: res.locals.paginate.hasNextPages ? `/admin/userList?page=${res.locals.paginate.next}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+        current: res.locals.paginate.page,
+        totalPages: res.locals.paginate.totalPages,
+      };
+
+      if (users.length === 0 && searchQuery) {
+        req.flash('warning', `No user found based on the input "${searchQuery}" for the field "${searchField}".`);
+      }
+
+      res.render('admin/userList', { users, pagination, searchQuery, searchField });
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');

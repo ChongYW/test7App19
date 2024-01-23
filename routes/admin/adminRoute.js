@@ -22,6 +22,14 @@ route.post('/userList/edit/delete/:userId', authenticationMiddleware.ensureAuthe
 route.get('/createLogisticsOrder', logisticsOrderController.createLogisticsOrderPage);
 route.post('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrder);
 
+// logisticsOrderList.ejs
+route.get('/logisticsOrderList', logisticsOrderController.logisticsOrderListPage);
+
+// editLogisticsOrder.ejs
+route.get('/logisticsOrderList/edit/:logisticsOrderId', logisticsOrderController.editLogisticsOrderPage);
+route.post('/logisticsOrderList/edit/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.editLogisticsOrder);
+route.post('/logisticsOrderList/edit/delete/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deleteEditLogisticsOrder);
+
 // Logout
 route.post('/logout', adminController.logout);
 

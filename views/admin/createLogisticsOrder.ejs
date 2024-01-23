@@ -22,53 +22,65 @@
 
         <form action="/admin/createLogisticsOrder" method="POST">
         
-            <div class="mb-3">
-              <label for="description" class="form-label">Description:</label>
-              <textarea class="form-control" id="description" name="description"></textarea>
-            </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea class="form-control" id="description" name="description"><%= typeof description !== 'undefined' ? description : '' %></textarea>
+          </div>
         
             <div class="mb-3">
+              <label class="form-label">Include Address?</label>
+              <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="addressOption" name="allowEmptyAddress" value="no" checked>
+                <label class="form-check-label" for="addressOption">Yes</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="withoutAddressOption" name="allowEmptyAddress" value="yes">
+                <label class="form-check-label" for="withoutAddressOption">Without Address</label>
+              </div>
+            </div>
+
+            <div class="mb-3">
               <label for="address1" class="form-label">Address Line 1:</label>
-              <input type="text" class="form-control" id="address1" name="address1" required>
+              <input type="text" class="form-control" id="address1" name="address1" value="<%= typeof address1 !== 'undefined' ? address1 : '' %>">
             </div>
         
             <div class="mb-3">
               <label for="address2" class="form-label">Address Line 2:</label>
-              <input type="text" class="form-control" id="address2" name="address2">
+              <input type="text" class="form-control" id="address2" name="address2" value="<%= typeof address2 !== 'undefined' ? address2 : '' %>">
             </div>
         
             <div class="mb-3">
               <label for="city" class="form-label">City:</label>
-              <input type="text" class="form-control" id="city" name="city" required>
+              <input type="text" class="form-control" id="city" name="city" value="<%= typeof city !== 'undefined' ? city : '' %>">
             </div>
         
             <div class="mb-3">
               <label for="postalCode" class="form-label">Postal Code:</label>
-              <input type="text" class="form-control" id="postalCode" name="postalCode" required>
+              <input type="text" class="form-control" id="postalCode" name="postalCode" value="<%= typeof postalCode !== 'undefined' ? postalCode : '' %>">
             </div>
         
             <div class="mb-3">
               <label for="country" class="form-label">Country:</label>
-              <input type="text" class="form-control" id="country" name="country" required>
+              <input type="text" class="form-control" id="country" name="country" value="<%= typeof country !== 'undefined' ? country : '' %>">
             </div>
         
             <div class="mb-3">
               <label for="paymentStatus" class="form-label">Payment Status:</label>
-              <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" required>
+              <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" value="<%= typeof paymentStatus !== 'undefined' ? paymentStatus : '' %>" required>
             </div>
         
             <div class="mb-3">
               <label for="paymentAmount" class="form-label">Payment Amount:</label>
-              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" required>
+              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" required>
             </div>
         
             <div class="mb-3">
               <label for="deliveryType" class="form-label">Delivery Type:</label>
-              <input type="text" class="form-control" id="deliveryType" name="deliveryType" required>
+              <input type="text" class="form-control" id="deliveryType" name="deliveryType" value="<%= typeof deliveryType !== 'undefined' ? deliveryType : '' %>" required>
             </div>
         
             <button type="submit" class="btn btn-primary">Create Order</button>
-          </form>
+        </form>
 
     </div>
     

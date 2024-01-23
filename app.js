@@ -71,4 +71,5 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
+// Stop at `editLogisticsOrder()` edit order validation.
 // Stop at create the order list and edit(Same as user list).
