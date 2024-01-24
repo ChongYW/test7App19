@@ -8,6 +8,142 @@ const createLogisticsOrderPage = (req, res) =>{
     res.render('admin/createLogisticsOrder');
 }
 
+const createLogisticsOrder = async (req, res) => {
+  // Extract address details
+  const {
+    description,
+    allowEmptyAddress,
+    address1, address2, city, postalCode, country,
+    paymentStatus,
+    paymentAmount,
+    deliveryType
+  } = req.body;
+
+  try {
+    if (allowEmptyAddress === 'yes' && (!address1.trim() && !address2.trim() && !city.trim() && !postalCode.trim() && !country.trim())) {
+      const emptyAddress = 'Order creator left it empty.';
+      let isValid = true;
+
+      if (!description.trim()) {
+        isValid = false;
+        req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
+      }
+
+      if (!paymentStatus.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Status must be filled in.');
+      }
+
+      if (!paymentAmount.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Amount must be filled in.');
+      }
+
+      if (!deliveryType.trim()) {
+        isValid = false;
+        req.flash('error', 'Delivery Type must be filled in.');
+      }
+
+      if (isValid) {
+        const logisticsOrder = new LogisticsOrder({
+          createdByUser: req.user._id, // Replace with the actual user ID
+          status: 'Pending',
+          description: description,
+          address: {
+            address1: emptyAddress,
+            address2: emptyAddress,
+            city: emptyAddress,
+            postalCode: emptyAddress,
+            country: emptyAddress
+          },
+          paymentStatus: paymentStatus,
+          paymentAmount: paymentAmount,
+          deliveryType: deliveryType
+        });
+
+        await logisticsOrder.save();
+        req.flash('success', 'Logistics Order created successfully!');
+        return res.render('admin/createLogisticsOrder');
+      }
+    } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
+      req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
+    } else {
+      // If the user does not choose "Allow empty address"
+      let isValid = true;
+
+      if (!address1.trim()) {
+        isValid = false;
+        req.flash('error', 'Address 1 must be filled in.');
+      }
+
+      if (!city.trim()) {
+        isValid = false;
+        req.flash('error', 'City must be filled in.');
+      }
+
+      if (!postalCode.trim()) {
+        isValid = false;
+        req.flash('error', 'Postal Code must be filled in.');
+      }
+
+      if (!country.trim()) {
+        isValid = false;
+        req.flash('error', 'Country must be filled in.');
+      }
+
+      if (!paymentStatus.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Status must be filled in.');
+      }
+
+      if (!paymentAmount.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Amount must be filled in.');
+      }
+
+      if (!deliveryType.trim()) {
+        isValid = false;
+        req.flash('error', 'Delivery Type must be filled in.');
+      }
+
+      if (isValid) {
+        // Create a new LogisticsOrder document
+        const logisticsOrder = new LogisticsOrder({
+          createdByUser: req.user._id, // Replace with the actual user ID
+          status: 'Pending',
+          description: description,
+          address: {
+            address1,
+            address2,
+            city,
+            postalCode,
+            country
+          },
+          paymentStatus: paymentStatus,
+          paymentAmount: paymentAmount,
+          deliveryType: deliveryType
+        });
+
+        await logisticsOrder.save();
+        req.flash('success', 'Logistics Order created successfully!');
+        return res.render('admin/createLogisticsOrder');
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    req.flash('error', error.message);
+  }
+
+  return res.render('admin/createLogisticsOrder', {
+    description,
+    allowEmptyAddress,
+    address1, address2, city, postalCode, country,
+    paymentStatus,
+    paymentAmount,
+    deliveryType
+  });
+};
+
 // const createLogisticsOrder = async (req, res) =>{
 
 //   // Extract address details
@@ -179,12 +315,13 @@ const logisticsOrderListPage = async (req, res) => {
           query = { paymentAmount: paymentAmount };
           break;
           
+        case '_id':
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { createdByUser: new mongoose.Types.ObjectId(searchQuery) };
+            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
           } else {
-            req.flash('warning', 'Invalid ObjectId format for createdByUser.');
+            req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
             return res.redirect('/admin/logisticsOrderList');
           }
           break;
@@ -238,147 +375,11 @@ const logisticsOrderListPage = async (req, res) => {
     }
 
     res.render('admin/logisticsOrderList', { logisticsOrders, pagination, searchQuery, searchField });
+    
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-};
-
-
-const createLogisticsOrder = async (req, res) => {
-  // Extract address details
-  const {
-    description,
-    allowEmptyAddress,
-    address1, address2, city, postalCode, country,
-    paymentStatus,
-    paymentAmount,
-    deliveryType
-  } = req.body;
-
-  try {
-    if (allowEmptyAddress === 'yes' && (!address1.trim() && !address2.trim() && !city.trim() && !postalCode.trim() && !country.trim())) {
-      const emptyAddress = 'Order creator left it empty.';
-      let isValid = true;
-
-      if (!description.trim()) {
-        isValid = false;
-        req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
-      }
-
-      if (!paymentStatus.trim()) {
-        isValid = false;
-        req.flash('error', 'Payment Status must be filled in.');
-      }
-
-      if (!paymentAmount.trim()) {
-        isValid = false;
-        req.flash('error', 'Payment Amount must be filled in.');
-      }
-
-      if (!deliveryType.trim()) {
-        isValid = false;
-        req.flash('error', 'Delivery Type must be filled in.');
-      }
-
-      if (isValid) {
-        const logisticsOrder = new LogisticsOrder({
-          createdByUser: req.user._id, // Replace with the actual user ID
-          status: 'Pending',
-          description: description,
-          address: {
-            address1: emptyAddress,
-            address2: emptyAddress,
-            city: emptyAddress,
-            postalCode: emptyAddress,
-            country: emptyAddress
-          },
-          paymentStatus: paymentStatus,
-          paymentAmount: paymentAmount,
-          deliveryType: deliveryType
-        });
-
-        await logisticsOrder.save();
-        req.flash('success', 'Logistics Order created successfully!');
-        return res.render('admin/createLogisticsOrder');
-      }
-    } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
-      req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
-    } else {
-      // If the user does not choose "Allow empty address"
-      let isValid = true;
-
-      if (!address1.trim()) {
-        isValid = false;
-        req.flash('error', 'Address 1 must be filled in.');
-      }
-
-      if (!city.trim()) {
-        isValid = false;
-        req.flash('error', 'City must be filled in.');
-      }
-
-      if (!postalCode.trim()) {
-        isValid = false;
-        req.flash('error', 'Postal Code must be filled in.');
-      }
-
-      if (!country.trim()) {
-        isValid = false;
-        req.flash('error', 'Country must be filled in.');
-      }
-
-      if (!paymentStatus.trim()) {
-        isValid = false;
-        req.flash('error', 'Payment Status must be filled in.');
-      }
-
-      if (!paymentAmount.trim()) {
-        isValid = false;
-        req.flash('error', 'Payment Amount must be filled in.');
-      }
-
-      if (!deliveryType.trim()) {
-        isValid = false;
-        req.flash('error', 'Delivery Type must be filled in.');
-      }
-
-      if (isValid) {
-        // Create a new LogisticsOrder document
-        const logisticsOrder = new LogisticsOrder({
-          createdByUser: req.user._id, // Replace with the actual user ID
-          status: 'Pending',
-          description: description,
-          address: {
-            address1,
-            address2,
-            city,
-            postalCode,
-            country
-          },
-          paymentStatus: paymentStatus,
-          paymentAmount: paymentAmount,
-          deliveryType: deliveryType
-        });
-
-        await logisticsOrder.save();
-        req.flash('success', 'Logistics Order created successfully!');
-        return res.render('admin/createLogisticsOrder');
-      }
-    }
-  } catch (error) {
-    console.error(error);
-    req.flash('error', error.message);
-  }
-
-  return res.render('admin/createLogisticsOrder', {
-    description,
-    allowEmptyAddress,
-    address1, address2, city, postalCode, country,
-    paymentStatus,
-    paymentAmount,
-    deliveryType
-  });
 };
 
 const editLogisticsOrderPage = async (req, res) =>{
@@ -396,10 +397,11 @@ const editLogisticsOrder = async (req, res) => {
   let isValid = true;
 
   try {
-    const orderId = req.params.logisticsOrderId;
-    const existingOrder = await LogisticsOrder.findById(orderId);
+    const logisticsOrder = req.params.logisticsOrderId;
+    const existingOrder = await LogisticsOrder.findById(logisticsOrder);
 
     const {
+      createdByUser,
       status,
       description,
       address1, address2, city, postalCode, country,
@@ -409,27 +411,30 @@ const editLogisticsOrder = async (req, res) => {
     } = req.body;
 
     // Your validation logic goes here
-    // ...
-
-    // Assuming you have validation checks similar to the ones in editUser()
+    const user = await User.findById(createdByUser);
+    if (!user) {
+      isValid = false;
+      req.flash('error', `User with ID "${createdByUser}" is not found!`);
+    }
 
     if (isValid) {
       // Update order data in the database based on the submitted form data (req.body)
       try {
-        await LogisticsOrder.findByIdAndUpdate(orderId, req.body);
+        await LogisticsOrder.findByIdAndUpdate(logisticsOrder, req.body);
 
         req.flash('success', 'Logistics order updated successfully!');
         res.redirect('/admin/logisticsOrderList');
       } catch (error) {
         console.error(error);
         req.flash('error', 'Error saving logistics order.');
-        res.redirect('/admin/editLogisticsOrder/' + orderId);
+        res.redirect('/admin/editLogisticsOrder/' + logisticsOrder);
       }
     } else {
       // Render the edit form with the input values if there's an issue
       res.render('admin/editLogisticsOrder', {
-        order: {
-          _id: orderId,
+        logisticsOrder: {
+          _id: logisticsOrder,
+          createdByUser,
           status,
           description,
           address: {

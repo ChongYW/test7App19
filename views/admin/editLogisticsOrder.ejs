@@ -19,9 +19,19 @@
 
     <div class="border rounded p-5">
 
-      <h2 class="mb-4">Edit Logistics Order</h2>
+      <h1 class="mb-4">Edit Logistics Order</h1>
 
       <form method="post" action="/admin/logisticsOrderList/edit/<%= logisticsOrder._id %>">
+
+        <div class="mb-3">
+          <label for="logisticsOrderId" class="form-label">Logistics Order ID(Can't edit):</label>
+          <input type="text" class="form-control" id="logisticsOrderId" name="logisticsOrderId" value="<%= logisticsOrder._id %>" readonly>
+        </div>
+        
+        <div class="mb-3">
+          <label for="createdByUser" class="form-label">Created By User ID:</label>
+          <input type="text" class="form-control" id="createdByUser" name="createdByUser" value="<%= logisticsOrder.createdByUser %>" required>
+        </div>
 
         <div class="mb-3">
           <label for="status" class="form-label">Status:</label>

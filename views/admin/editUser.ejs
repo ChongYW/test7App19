@@ -18,7 +18,7 @@
 
     <div class="border rounded p-5">
 
-        <h2 class="mb-4">Edit User</h2>
+        <h1 class="mb-4">Edit User</h1>
 
         <form method="post" action="/admin/userList/edit/<%= user._id %>">
 
@@ -29,7 +29,7 @@
         
             <div class="mb-3">
               <label for="password" class="form-label">Password:</label>
-              <input type="password" class="form-control" id="password" name="password" value="<%= user.password %>" placeholder="Leave it blank and update will remain the same Password.">
+              <input type="password" class="form-control" id="password" name="password" value="<%= user.password %>" placeholder="Leave it blank and save will remain the same Password.">
             </div>
         
             <div class="mb-3">
