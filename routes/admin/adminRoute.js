@@ -30,6 +30,10 @@ route.get('/logisticsOrderList/edit/:logisticsOrderId', authenticationMiddleware
 route.post('/logisticsOrderList/edit/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.editLogisticsOrder);
 route.post('/logisticsOrderList/edit/delete/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deleteEditLogisticsOrder);
 
+// logisticsOrderFeedPage.ejs
+route.get('/logisticsOrderFeed', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderFeedPage);
+
+
 // Logout
 route.post('/logout', adminController.logout);
 

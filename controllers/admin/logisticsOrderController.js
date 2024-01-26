@@ -468,6 +468,276 @@ const deleteEditLogisticsOrder = async (req, res) =>{
   }
 }
 
+// const logisticsOrderFeedPage = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const perPage = 9; // Adjust this value based on your preference
+//     const skip = (page - 1) * perPage;
+
+//     const logisticsOrderStatus = req.query.searchStatusField || 'Pending';
+
+//     let query = {
+//       status: logisticsOrderStatus,
+//     };
+
+//     const searchQuery = req.query.search;
+//     const searchField = req.query.searchField;
+
+//     if (searchQuery && searchField) {
+//       switch (searchField) {
+//         case 'paymentAmount':
+//           // Check if the entered value is a valid number
+//           const paymentAmount = parseFloat(searchQuery);
+
+//           if (isNaN(paymentAmount)) {
+//             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
+//             return res.redirect('/admin/logisticsOrderList');
+//           }
+
+//           query = { paymentAmount: paymentAmount };
+//           break;
+
+//         case '_id':
+//           // Check if the entered value is a valid ObjectId
+//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: logisticsOrderStatus };
+//           } else {
+//             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
+//             return res.redirect('/admin/logisticsOrderFeed');
+//           }
+//           break;
+
+//         case 'createdByUser':
+//           // Check if the entered value is a valid ObjectId
+//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: logisticsOrderStatus };
+//           } else {
+//             // If not a valid ObjectId, assume it's a user name
+//             const userQuery = { username: new RegExp(searchQuery, 'i') };
+//             const users = await User.find(userQuery, '_id');
+//             const userIds = users.map(user => user._id);
+            
+//             if (userIds.length === 0) {
+//               req.flash('warning', `No user found with the username "${searchQuery}".`);
+//               return res.redirect('/admin/logisticsOrderFeed');
+//             }
+
+//             query = { [searchField]: { $in: userIds }, status: logisticsOrderStatus };
+//           }
+//           break;
+
+//         // Your existing cases for different search fields
+//         case 'status':
+//         case 'description':
+//         case 'address.address1':
+//         case 'address.address2':
+//         case 'address.city':
+//         case 'address.postalCode':
+//         case 'address.country':
+//         case 'paymentStatus':
+//         case 'deliveryType':
+//           query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+//           break;
+
+//         case 'createdAt':
+//         case 'updatedAt':
+//           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
+//           const startDate = new Date(searchQuery);
+
+//           if (isNaN(startDate.getTime())) {
+//             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+//             return res.redirect('/admin/logisticsOrderFeed');
+//           }
+
+//           startDate.setHours(0, 0, 0, 0);
+//           const endDate = new Date(startDate);
+//           endDate.setHours(23, 59, 59, 999);
+
+//           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
+//           break;
+
+//         // Other cases for different search fields
+
+//         default:
+//           req.flash('warning', 'Invalid search field.');
+//           return res.redirect('/admin/logisticsOrderFeed');
+//       }
+//     }
+
+//     const logisticsOrders = await LogisticsOrder.find(query)
+//       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
+//       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
+//       .skip(skip)
+//       .limit(perPage);
+
+//     const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
+//     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
+
+//     const pagination = {
+//       prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${logisticsOrderStatus || ''}&searchField=${searchField || ''}` : null,
+//       next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${logisticsOrderStatus || ''}&searchField=${searchField || ''}` : null,
+//       current: page,
+//       totalPages: totalPages,
+//     };
+
+//     if (logisticsOrders.length === 0 && searchQuery) {
+//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+//     }
+
+//     res.render('admin/logisticsOrderFeed', { logisticsOrders, pagination, searchQuery, searchField });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
+
+const logisticsOrderFeedPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 9; // Adjust this value based on your preference
+    const skip = (page - 1) * perPage;
+
+    // Initialize variables with default values
+    let searchQuery = '';
+    let searchField = '_id';
+    let searchStatusField = 'Pending';
+
+    if (req.query.search) {
+      searchQuery = req.query.search;
+    }
+
+    if (req.query.searchField) {
+      searchField = req.query.searchField;
+    }
+
+    if (req.query.searchStatusField) {
+      searchStatusField = req.query.searchStatusField;
+    }
+
+    let query = {
+      status: searchStatusField,
+    };
+
+    // Need to adjust the search range to userB and userC.
+    if (searchQuery && searchField) {
+      switch (searchField) {
+        case 'paymentAmount':
+          // Check if the entered value is a valid number
+          const paymentAmount = parseFloat(searchQuery);
+
+          if (isNaN(paymentAmount)) {
+            req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
+            return res.redirect('/admin/logisticsOrderList');
+          }
+
+          query = { paymentAmount: paymentAmount };
+          break;
+
+        case '_id':
+          // Check if the entered value is a valid ObjectId
+          if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+          } else {
+            req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
+            return res.redirect('/admin/logisticsOrderFeed');
+          }
+          break;
+
+        case 'createdByUser':
+          // Check if the entered value is a valid ObjectId
+          if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+          } else {
+            // If not a valid ObjectId, assume it's a user name
+            const userQuery = { username: new RegExp(searchQuery, 'i') };
+            const users = await User.find(userQuery, '_id');
+            const userIds = users.map(user => user._id);
+            
+            if (userIds.length === 0) {
+              req.flash('warning', `No user found with the username "${searchQuery}".`);
+              return res.redirect('/admin/logisticsOrderFeed');
+            }
+
+            query = { [searchField]: { $in: userIds }, status: searchStatusField };
+          }
+          break;
+
+        // Your existing cases for different search fields
+        case 'status':
+        case 'description':
+        case 'address.address1':
+        case 'address.address2':
+        case 'address.city':
+        case 'address.postalCode':
+        case 'address.country':
+        case 'paymentStatus':
+        case 'deliveryType':
+          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          break;
+
+        case 'createdAt':
+        case 'updatedAt':
+          const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
+          const startDate = new Date(searchQuery);
+
+          if (isNaN(startDate.getTime())) {
+            req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+            return res.redirect('/admin/logisticsOrderFeed');
+          }
+
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+
+          query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
+          break;
+
+        // Other cases for different search fields
+
+        default:
+          req.flash('warning', 'Invalid search field.');
+          return res.redirect('/admin/logisticsOrderFeed');
+      }
+    }
+
+    const logisticsOrders = await LogisticsOrder.find(query)
+      .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
+      .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
+      .skip(skip)
+      .limit(perPage);
+
+    const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
+    const totalPages = Math.ceil(totalLogisticsOrders / perPage);
+
+    const pagination = {
+      prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+      next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+      current: page,
+      totalPages: totalPages,
+    };
+
+    if (logisticsOrders.length === 0 && searchQuery) {
+      req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
+    }
+
+    res.render('admin/logisticsOrderFeed', {
+      logisticsOrders,
+      pagination,
+      searchQuery,
+      searchField,
+      searchStatusField,
+      page,
+      perPage,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+
 module.exports = {
     createLogisticsOrderPage,
     createLogisticsOrder,
@@ -475,4 +745,5 @@ module.exports = {
     editLogisticsOrderPage,
     editLogisticsOrder,
     deleteEditLogisticsOrder,
+    logisticsOrderFeedPage,
 }
