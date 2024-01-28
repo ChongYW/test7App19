@@ -33,6 +33,9 @@ route.post('/logisticsOrderList/edit/delete/:logisticsOrderId', authenticationMi
 // logisticsOrderFeedPage.ejs
 route.get('/logisticsOrderFeed', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderFeedPage);
 
+// logisticsOrderDetails.ejs
+route.get('/logisticsOrderFeed/logisticsOrderDetails/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderDetailsPage);
+route.post('/logisticsOrderFeed/logisticsOrderDetails/addToDeliveryList/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.addToDeliveryList)
 
 // Logout
 route.post('/logout', adminController.logout);

@@ -34,8 +34,21 @@
         </div>
 
         <div class="mb-3">
+          <!-- <label for="status" class="form-label">Status:</label>
+          <input type="text" class="form-control" id="status" name="status" value="<%= logisticsOrder.status %>" required> -->
+
           <label for="status" class="form-label">Status:</label>
-          <input type="text" class="form-control" id="status" name="status" value="<%= logisticsOrder.status %>" required>
+          <select id="status" name="status" class="form-select">
+              <option value="Draft Order" <%= logisticsOrder.status === 'Draft Order' ? 'selected' : '' %>>Draft Order</option>
+              <option value="Order Posted to Feed" <%= logisticsOrder.status === 'Order Posted to Feed' ? 'selected' : '' %>>Order Posted to Feed</option>
+              <option value="Added to Delivery List" <%= logisticsOrder.status === 'Added to Delivery List' ? 'selected' : '' %>>Added to Delivery List</option>
+              <option value="Delivery in Progress" <%= logisticsOrder.status === 'Delivery in Progress' ? 'selected' : '' %>>Delivery in Progress</option>
+              <option value="Delivered Successfully" <%= logisticsOrder.status === 'Delivered Successfully' ? 'selected' : '' %>>Delivered Successfully</option>
+              <option value="Returning" <%= logisticsOrder.status === 'Returning' ? 'selected' : '' %>>Returning</option>
+              <option value="Returned" <%= logisticsOrder.status === 'Returned' ? 'selected' : '' %>>Returned</option>
+              <option value="Delivery Attempted" <%= logisticsOrder.status === 'Delivery Attempted' ? 'selected' : '' %>>Delivery Attempted</option>
+              <option value="Cancel Delivery" <%= logisticsOrder.status === 'Cancel Delivery' ? 'selected' : '' %>>Cancel Delivery</option>
+          </select>
         </div>
 
         <div class="mb-3">

@@ -1,5 +1,6 @@
 const LogisticsOrder = require('../../models/logisticsOrderModel');
 const User = require('../../models/userModel');
+const DeliveryList = require('../../models/deliveryListModel')
 const validator = require('validator');
 const paginate = require('express-paginate');
 const mongoose = require('mongoose');
@@ -47,14 +48,14 @@ const createLogisticsOrder = async (req, res) => {
       if (isValid) {
         const logisticsOrder = new LogisticsOrder({
           createdByUser: req.user._id, // Replace with the actual user ID
-          status: 'Pending',
+          status: 'Draft Order',
           description: description,
           address: {
             address1: emptyAddress,
-            address2: emptyAddress,
-            city: emptyAddress,
-            postalCode: emptyAddress,
-            country: emptyAddress
+            address2: '-',
+            city: '-',
+            postalCode: '-',
+            country: '-'
           },
           paymentStatus: paymentStatus,
           paymentAmount: paymentAmount,
@@ -110,7 +111,7 @@ const createLogisticsOrder = async (req, res) => {
         // Create a new LogisticsOrder document
         const logisticsOrder = new LogisticsOrder({
           createdByUser: req.user._id, // Replace with the actual user ID
-          status: 'Pending',
+          status: 'Draft Order',
           description: description,
           address: {
             address1,
@@ -417,6 +418,22 @@ const editLogisticsOrder = async (req, res) => {
       req.flash('error', `User with ID "${createdByUser}" is not found!`);
     }
 
+    const allowedStatusValue = [
+      'Draft Order', 
+      'Order Posted to Feed', 
+      'Added to Delivery List', 
+      'Delivery in Progress', 
+      'Delivered Successfully', 
+      'Returning', 
+      'Returned', 
+      'Delivery Attempted', 
+      'Cancel Delivery',
+    ];
+    if (!allowedStatusValue.includes(status)) {
+      isValid = false;
+      req.flash('error', 'Invalid status.');
+    }
+
     if (isValid) {
       // Update order data in the database based on the submitted form data (req.body)
       try {
@@ -474,15 +491,34 @@ const deleteEditLogisticsOrder = async (req, res) =>{
 //     const perPage = 9; // Adjust this value based on your preference
 //     const skip = (page - 1) * perPage;
 
-//     const logisticsOrderStatus = req.query.searchStatusField || 'Pending';
+//     // Initialize variables with default values
+//     let searchQuery = '';
+//     let searchField = '_id';
+//     let searchStatusField = 'Order Posted to Feed';
+
+//     const currentDateTime = new Date(); // This represents the current date and time
+
+//     // Calculate 5 minutes ago
+//     const fiveMinutesAgo = new Date(currentDateTime - 5 * 60 * 1000);
+
+//     if (req.query.search) {
+//       searchQuery = req.query.search;
+//     }
+
+//     if (req.query.searchField) {
+//       searchField = req.query.searchField;
+//     }
+
+//     if (req.query.searchStatusField) {
+//       searchStatusField = req.query.searchStatusField;
+//     }
 
 //     let query = {
-//       status: logisticsOrderStatus,
+//       status: searchStatusField,
+//       updatedAt: { $lte: fiveMinutesAgo },
 //     };
 
-//     const searchQuery = req.query.search;
-//     const searchField = req.query.searchField;
-
+//     // Need to adjust the search range to userB and userC.
 //     if (searchQuery && searchField) {
 //       switch (searchField) {
 //         case 'paymentAmount':
@@ -500,7 +536,7 @@ const deleteEditLogisticsOrder = async (req, res) =>{
 //         case '_id':
 //           // Check if the entered value is a valid ObjectId
 //           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: logisticsOrderStatus };
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
 //           } else {
 //             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
 //             return res.redirect('/admin/logisticsOrderFeed');
@@ -510,7 +546,7 @@ const deleteEditLogisticsOrder = async (req, res) =>{
 //         case 'createdByUser':
 //           // Check if the entered value is a valid ObjectId
 //           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: logisticsOrderStatus };
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
 //           } else {
 //             // If not a valid ObjectId, assume it's a user name
 //             const userQuery = { username: new RegExp(searchQuery, 'i') };
@@ -522,7 +558,168 @@ const deleteEditLogisticsOrder = async (req, res) =>{
 //               return res.redirect('/admin/logisticsOrderFeed');
 //             }
 
-//             query = { [searchField]: { $in: userIds }, status: logisticsOrderStatus };
+//             query = { [searchField]: { $in: userIds }, status: searchStatusField };
+//           }
+//           break;
+
+//         // Your existing cases for different search fields
+//         case 'status':
+//         case 'description':
+//         case 'address.address1':
+//         case 'address.address2':
+//         case 'address.city':
+//         case 'address.postalCode':
+//         case 'address.country':
+//         case 'paymentStatus':
+//         case 'deliveryType':
+//           query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+//           break;
+
+//         case 'createdAt':
+//         case 'updatedAt':
+//           const startDate = new Date(searchQuery);
+          
+//           if (isNaN(startDate.getTime())) {
+//             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+//             return res.redirect('/admin/logisticsOrderFeed');
+//           }
+          
+//           startDate.setHours(0, 0, 0, 0);
+//           const endDate = new Date(startDate);
+//           endDate.setHours(23, 59, 59, 999);
+        
+//           // Calculate 5 minutes ago (corrected line)
+//           const fiveMinutesAgo = new Date(endDate - 5 * 60 * 1000);
+          
+//           // Adjust the query to include only data updated more than or equal to 5 minutes ago
+//           query = {
+//             ...query,
+//             [searchField]: {
+//               $gte: fiveMinutesAgo,
+//               $lte: endDate
+//             }
+//            };
+        
+//           break;
+
+//         // Other cases for different search fields
+
+//         default:
+//           req.flash('warning', 'Invalid search field.');
+//           return res.redirect('/admin/logisticsOrderFeed');
+//       }
+//     }
+
+//     const logisticsOrders = await LogisticsOrder.find(query)
+//       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
+//       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
+//       .skip(skip)
+//       .limit(perPage);
+
+//     const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
+//     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
+
+//     const pagination = {
+//       prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+//       next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+//       current: page,
+//       totalPages: totalPages,
+//     };
+
+//     if (logisticsOrders.length === 0 && searchQuery) {
+//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
+//     }
+
+//     res.render('admin/logisticsOrderFeed', {
+//       logisticsOrders,
+//       pagination,
+//       searchQuery,
+//       searchField,
+//       searchStatusField,
+//       page,
+//       perPage,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
+
+// const logisticsOrderFeedPage = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const perPage = 9; // Adjust this value based on your preference
+//     const skip = (page - 1) * perPage;
+
+//     // Initialize variables with default values
+//     let searchQuery = '';
+//     let searchField = '_id';
+//     let searchStatusField = 'Order Posted to Feed';
+
+//     const currentDateTime = new Date(); // This represents the current date and time
+
+//     // Calculate 5 minutes ago
+//     const fiveMinutesAgo = new Date(currentDateTime - 5 * 60 * 1000);
+
+//     if (req.query.search) {
+//       searchQuery = req.query.search;
+//     }
+
+//     if (req.query.searchField) {
+//       searchField = req.query.searchField;
+//     }
+
+//     if (req.query.searchStatusField) {
+//       searchStatusField = req.query.searchStatusField;
+//     }
+
+//     let query = {
+//       status: searchStatusField,
+//       updatedAt: { $lte: fiveMinutesAgo },
+//     };
+
+//     // Need to adjust the search range to userB and userC.
+//     if (searchQuery && searchField) {
+//       switch (searchField) {
+//         case 'paymentAmount':
+//           // Check if the entered value is a valid number
+//           const paymentAmount = parseFloat(searchQuery);
+
+//           if (isNaN(paymentAmount)) {
+//             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
+//             return res.redirect('/admin/logisticsOrderList');
+//           }
+
+//           query = { paymentAmount: paymentAmount };
+//           break;
+
+//         case '_id':
+//           // Check if the entered value is a valid ObjectId
+//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+//           } else {
+//             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
+//             return res.redirect('/admin/logisticsOrderFeed');
+//           }
+//           break;
+
+//         case 'createdByUser':
+//           // Check if the entered value is a valid ObjectId
+//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+//             query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+//           } else {
+//             // If not a valid ObjectId, assume it's a user name
+//             const userQuery = { username: new RegExp(searchQuery, 'i') };
+//             const users = await User.find(userQuery, '_id');
+//             const userIds = users.map(user => user._id);
+            
+//             if (userIds.length === 0) {
+//               req.flash('warning', `No user found with the username "${searchQuery}".`);
+//               return res.redirect('/admin/logisticsOrderFeed');
+//             }
+
+//             query = { [searchField]: { $in: userIds }, status: searchStatusField };
 //           }
 //           break;
 
@@ -574,17 +771,25 @@ const deleteEditLogisticsOrder = async (req, res) =>{
 //     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
 
 //     const pagination = {
-//       prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${logisticsOrderStatus || ''}&searchField=${searchField || ''}` : null,
-//       next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${logisticsOrderStatus || ''}&searchField=${searchField || ''}` : null,
+//       prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+//       next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
 //       current: page,
 //       totalPages: totalPages,
 //     };
 
 //     if (logisticsOrders.length === 0 && searchQuery) {
-//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
 //     }
 
-//     res.render('admin/logisticsOrderFeed', { logisticsOrders, pagination, searchQuery, searchField });
+//     res.render('admin/logisticsOrderFeed', {
+//       logisticsOrders,
+//       pagination,
+//       searchQuery,
+//       searchField,
+//       searchStatusField,
+//       page,
+//       perPage,
+//     });
 
 //   } catch (error) {
 //     console.error(error);
@@ -601,7 +806,12 @@ const logisticsOrderFeedPage = async (req, res) => {
     // Initialize variables with default values
     let searchQuery = '';
     let searchField = '_id';
-    let searchStatusField = 'Pending';
+    let searchStatusField = 'Order Posted to Feed';
+
+    const currentDateTime = new Date(); // This represents the current date and time
+
+    // Calculate 5 minutes ago
+    const fiveMinutesAgo = new Date(currentDateTime - 5 * 60 * 1000);
 
     if (req.query.search) {
       searchQuery = req.query.search;
@@ -617,6 +827,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
     let query = {
       status: searchStatusField,
+      updatedAt: { $lte: fiveMinutesAgo },
     };
 
     // Need to adjust the search range to userB and userC.
@@ -631,13 +842,13 @@ const logisticsOrderFeedPage = async (req, res) => {
             return res.redirect('/admin/logisticsOrderList');
           }
 
-          query = { paymentAmount: paymentAmount };
+          query = { ...query, paymentAmount: paymentAmount };
           break;
 
         case '_id':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
             return res.redirect('/admin/logisticsOrderFeed');
@@ -647,7 +858,7 @@ const logisticsOrderFeedPage = async (req, res) => {
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
+            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
           } else {
             // If not a valid ObjectId, assume it's a user name
             const userQuery = { username: new RegExp(searchQuery, 'i') };
@@ -659,7 +870,7 @@ const logisticsOrderFeedPage = async (req, res) => {
               return res.redirect('/admin/logisticsOrderFeed');
             }
 
-            query = { [searchField]: { $in: userIds }, status: searchStatusField };
+            query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
           }
           break;
 
@@ -673,25 +884,27 @@ const logisticsOrderFeedPage = async (req, res) => {
         case 'address.country':
         case 'paymentStatus':
         case 'deliveryType':
-          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
 
-        case 'createdAt':
-        case 'updatedAt':
-          const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
-          const startDate = new Date(searchQuery);
-
-          if (isNaN(startDate.getTime())) {
-            req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.redirect('/admin/logisticsOrderFeed');
-          }
-
-          startDate.setHours(0, 0, 0, 0);
-          const endDate = new Date(startDate);
-          endDate.setHours(23, 59, 59, 999);
-
-          query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
-          break;
+          case 'createdAt':
+            case 'updatedAt':
+              const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
+              const startDate = new Date(searchQuery);
+          
+              if (isNaN(startDate.getTime())) {
+                req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+                return res.redirect('/admin/logisticsOrderFeed');
+              }
+          
+              startDate.setHours(0, 0, 0, 0);
+          
+              // Adjust endDate to be 5 minutes less than the current time
+              const endDate = new Date();
+              endDate.setMinutes(endDate.getMinutes() - 5);
+          
+              query = { ...query, [dateField]: { $gte: startDate, $lte: endDate.toISOString() } };
+              break;
 
         // Other cases for different search fields
 
@@ -737,6 +950,59 @@ const logisticsOrderFeedPage = async (req, res) => {
   }
 };
 
+const logisticsOrderDetailsPage = async (req, res) =>{
+  try {
+    const logisticsOrder = await LogisticsOrder.findById(req.params.logisticsOrderId).populate('createdByUser', 'username');
+    
+    if (logisticsOrder) {
+      return res.render('admin/logisticsOrderDetails', {logisticsOrder})
+    }
+
+    req.flash('error', 'Something wrong, please try again...');
+    return redirect('/admin/logisticsOrderFeed');
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+
+const addToDeliveryList = async (req, res) =>{
+
+  try {
+    const logisticsOrder = await LogisticsOrder.findById(req.params.logisticsOrderId);
+
+    if (logisticsOrder && logisticsOrder.status === 'Order Posted to Feed') {
+
+      await LogisticsOrder.findByIdAndUpdate(
+        req.params.logisticsOrderId,
+        { $set: { status: 'Added to Delivery List' } },
+        { new: true } // Set to true to return the updated document
+      );
+
+      const addToDeliveryList = new DeliveryList({
+        logisticsOrder_id: req.params.logisticsOrderId,
+        user_id: req.user._id
+      });
+
+      await addToDeliveryList.save();
+
+      req.flash('success', `The logistics order is added to your "DeliveryList" successfully!`);
+
+    }else if(logisticsOrder && !logisticsOrder.status === 'Added to Delivery List'){
+      req.flash('warning', 'The logistics order is taken by other, try another.');
+    }else{
+      req.flash('error', 'The logistics order is not found, try another.');
+    }
+
+    res.redirect('/admin/logisticsOrderFeed');
+
+  } catch (error) {
+    req.flash('error', error)
+    console.error(error);
+    res.status(500).render('somethingWrong');
+  }
+}
 
 module.exports = {
     createLogisticsOrderPage,
@@ -746,4 +1012,6 @@ module.exports = {
     editLogisticsOrder,
     deleteEditLogisticsOrder,
     logisticsOrderFeedPage,
+    logisticsOrderDetailsPage,
+    addToDeliveryList,
 }

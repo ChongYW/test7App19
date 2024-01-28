@@ -71,4 +71,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
+// Stop at Order status flow checking.
+// Stop at adding the "Logistics Orders" to "Delivery list".
+// Stop at create `LogisticsGrab` model.
 // Stop at about create the logistics order post/news feed.
