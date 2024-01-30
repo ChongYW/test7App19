@@ -22,6 +22,9 @@ route.post('/userList/edit/delete/:userId', authenticationMiddleware.ensureAuthe
 route.get('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrderPage);
 route.post('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrder);
 
+// logisticsOrderPendingList.ejs
+route.get('/logisticsOrderPendingList', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderPendingListPage);
+
 // logisticsOrderList.ejs
 route.get('/logisticsOrderList', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderListPage);
 
@@ -30,12 +33,15 @@ route.get('/logisticsOrderList/edit/:logisticsOrderId', authenticationMiddleware
 route.post('/logisticsOrderList/edit/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.editLogisticsOrder);
 route.post('/logisticsOrderList/edit/delete/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deleteEditLogisticsOrder);
 
-// logisticsOrderFeedPage.ejs
+// logisticsOrderFeed.ejs
 route.get('/logisticsOrderFeed', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderFeedPage);
 
 // logisticsOrderDetails.ejs
 route.get('/logisticsOrderFeed/logisticsOrderDetails/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderDetailsPage);
 route.post('/logisticsOrderFeed/logisticsOrderDetails/addToDeliveryList/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.addToDeliveryList)
+
+// deliveryList.ejs
+route.get('/deliveryList', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryListPage);
 
 // Logout
 route.post('/logout', adminController.logout);

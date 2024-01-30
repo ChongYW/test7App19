@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('./partials/header'); %>
+  <title>Logistics Orders Pending List</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <!-- <div class="container mt-5"> -->
+    <div class="mt-5">
+
+      <div class="container">
+        <h1 class="mb-4">Logistics Orders Pending List</h1>
+
+        <!-- Search form -->
+        <form action="/admin/logisticsOrderPendingList" method="get" class="mb-3">
+            <div class="input-group">
+              <label for="search" class="visually-hidden">Search:</label>
+              <input type="text" id="search" name="search" class="form-control" placeholder="Search..." value="<%= searchQuery || '' %>">
+              
+              <label for="searchStatusField" class="visually-hidden">Status:</label>
+              <select id="searchStatusField" name="searchStatusField" class="form-select">
+                  <option value="Draft Order" <%= searchStatusField === 'Draft Order' ? 'selected' : '' %>>Draft Order</option>
+                  <option value="Order Posted to Feed" <%= searchStatusField === 'Order Posted to Feed' ? 'selected' : '' %>>Order Posted to Feed</option>
+                  <option value="Added to Delivery List" <%= searchStatusField === 'Added to Delivery List' ? 'selected' : '' %>>Added to Delivery List</option>
+                  <option value="Delivery in Progress" <%= searchStatusField === 'Delivery in Progress' ? 'selected' : '' %>>Delivery in Progress</option>
+                  <option value="Delivered Successfully" <%= searchStatusField === 'Delivered Successfully' ? 'selected' : '' %>>Delivered Successfully</option>
+                  <option value="Returning" <%= searchStatusField === 'Returning' ? 'selected' : '' %>>Returning</option>
+                  <option value="Returned" <%= searchStatusField === 'Returned' ? 'selected' : '' %>>Returned</option>
+                  <option value="Delivery Attempted" <%= searchStatusField === 'Delivery Attempted' ? 'selected' : '' %>>Delivery Attempted</option>
+                  <option value="Cancel Delivery" <%= searchStatusField === 'Cancel Delivery' ? 'selected' : '' %>>Cancel Delivery</option>
+              </select>
+          
+              <label for="searchField" class="visually-hidden">Search By:</label>
+              <select id="searchField" name="searchField" class="form-select">
+                  <option value="_id" <%= searchField === '_id' ? 'selected' : '' %>>Logistics Order ID</option>
+                  <option value="createdByUser" <%= searchField === 'createdByUser' ? 'selected' : '' %>>Created By User(ID or Username)</option>
+                  <option value="status" <%= searchField === 'status' ? 'selected' : '' %>>Status</option>
+                  <option value="description" <%= searchField === 'description' ? 'selected' : '' %>>Description</option>
+                  <option value="address.address1" <%= searchField === 'address.address1' ? 'selected' : '' %>>Address Line 1</option>
+                  <option value="address.address2" <%= searchField === 'address.address2' ? 'selected' : '' %>>Address Line 2</option>
+                  <option value="address.city" <%= searchField === 'address.city' ? 'selected' : '' %>>City</option>
+                  <option value="address.postalCode" <%= searchField === 'address.postalCode' ? 'selected' : '' %>>Postal Code</option>
+                  <option value="address.country" <%= searchField === 'address.country' ? 'selected' : '' %>>Country</option>
+                  <option value="paymentStatus" <%= searchField === 'paymentStatus' ? 'selected' : '' %>>Payment Status</option>
+                  <option value="paymentAmount" <%= searchField === 'paymentAmount' ? 'selected' : '' %>>Payment Amount</option>
+                  <option value="deliveryType" <%= searchField === 'deliveryType' ? 'selected' : '' %>>Delivery Type</option>
+                  <option value="createdAt" <%= searchField === 'createdAt' ? 'selected' : '' %>>Created At</option>
+                  <option value="updatedAt" <%= searchField === 'updatedAt' ? 'selected' : '' %>>Updated At</option>
+              </select>
+              
+              <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+      </div>
+
+      <!-- Table to display logistics orders -->
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>NO.</th>
+              <th>Logistics Order ID</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Delivery Type</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% logisticsOrders.forEach((logisticsOrder, index) => { %>
+              <tr>
+                <td><%= (page - 1) * perPage + index + 1 %></td>
+                <td><%= logisticsOrder._id %></td>
+                <td><%= logisticsOrder.status %></td>
+                <td><%= logisticsOrder.description %></td>
+                <td><%= logisticsOrder.deliveryType %></td>
+                <td><%= logisticsOrder.createdAt %></td>
+                <td><%= logisticsOrder.updatedAt %></td>
+                <td>
+                  <a href="/admin/logisticsOrderList/edit/<%= logisticsOrder._id %>" class="btn btn-primary btn-sm">Details</a>
+                  <!-- <a href="/admin/logisticsOrderList/delete/<%= logisticsOrder._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this logistics order?')">Delete</a> -->
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="container">
+        <!-- Pagination links -->
+        <div class="d-flex justify-content-between mt-3">
+          <% if (pagination.prev) { %>
+            <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
+          <% } %>
+  
+          <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
+  
+          <% if (pagination.next) { %>
+            <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
+          <% } %>
+        </div>
+      </div>
+
+    <!-- </div> -->
+  </div>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body>
+</html>

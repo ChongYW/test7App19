@@ -50,7 +50,7 @@ app.use('/admin', authenticationMiddleware.ensureAuthenticated, authenticationMi
 app.use('/userB', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isUserB, userBRoute);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
@@ -58,7 +58,7 @@ app.use(function(req, res, next) {
 
 // For debbuging (1/2) start.
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -71,7 +71,19 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
+// Stop at updating the `editLogisticsOrder()`.
+
+// Stop at create EJS:
+// 1. Logistic order draft.
+// 2. Delivery list
+
 // Stop at Order status flow checking.
 // Stop at adding the "Logistics Orders" to "Delivery list".
 // Stop at create `LogisticsGrab` model.
 // Stop at about create the logistics order post/news feed.
+
+// Reminder:
+// 1. Remove some function in lower lever role:
+//    * In "Edit Logistics Order" from User B, like "User ID"...
+// 2. Add "Reciver", "Phone" and "PaymentType" field to the "Logistic order" model.
+// 3. Change the "UserB" to "CustomerService" and "UserC" to "Runner".
