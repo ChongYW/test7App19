@@ -43,6 +43,10 @@ route.post('/logisticsOrderFeed/logisticsOrderDetails/addToDeliveryList/:logisti
 // deliveryList.ejs
 route.get('/deliveryList', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryListPage);
 
+// deliveryDetails.ejs
+route.get('/deliveryList/deliveryDetails/:deliveryId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryDetailsPage);
+route.post('/deliveryList/deliveryDetails/removeFromDeliveryList/:deliveryId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.removeFromDeliveryList);
+
 // Logout
 route.post('/logout', adminController.logout);
 

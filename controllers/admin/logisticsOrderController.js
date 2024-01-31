@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 
 const createLogisticsOrderPage = (req, res) => {
   res.render('admin/createLogisticsOrder');
-}
+};
 
 const createLogisticsOrder = async (req, res) => {
   // Extract address details
@@ -145,6 +145,7 @@ const createLogisticsOrder = async (req, res) => {
   });
 };
 
+// Need to change it only show the create by current user "Logistics Order Pending List".
 const logisticsOrderPendingListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -399,7 +400,7 @@ const editLogisticsOrderPage = async (req, res) => {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-}
+};
 
 const editLogisticsOrder = async (req, res) => {
   let isValid = true;
@@ -587,7 +588,7 @@ const deleteEditLogisticsOrder = async (req, res) => {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-}
+};
 
 const logisticsOrderFeedPage = async (req, res) => {
   try {
@@ -757,7 +758,7 @@ const logisticsOrderDetailsPage = async (req, res) => {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-}
+};
 
 const addToDeliveryList = async (req, res) => {
 
@@ -794,7 +795,7 @@ const addToDeliveryList = async (req, res) => {
     console.error(error);
     res.status(500).render('somethingWrong');
   }
-}
+};
 
 // const deliveryListPage = async (req, res) => {
 //   try {
@@ -956,13 +957,16 @@ const deliveryListPage = async (req, res) => {
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
+    let thisUserValidDeliveryList = [];
+
     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
-      .select('logisticsOrder_id deliveredAt') // Select only the fields you want
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
+        match: { status: 'Added to Delivery List' }, // Add the condition here
         select: 'status description address paymentStatus paymentAmount deliveryType'
-      }).populate({
+      })
+      .populate({
         path: 'user_id',
         model: 'User',
         select: 'username phone email role status' // Select only the fields you want from User
@@ -970,9 +974,24 @@ const deliveryListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    const totalThisUserDeliveryList = await DeliveryList.countDocuments({ user_id: req.user._id });
+    for (let i = 0; i < thisUserDeliveryList.length; i++) {
 
-    const totalPages = Math.ceil(totalThisUserDeliveryList / perPage);
+      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
+
+      // Check if logisticsOrder is not null or undefined
+      if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
+        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
+      }
+
+    }
+
+    if (!thisUserValidDeliveryList.length) {
+      req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
+    }
+
+    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+
+    const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
     const pagination = {
       prev: page > 1 ? `/admin/deliveryList?page=${page - 1}` : null,
@@ -981,12 +1000,9 @@ const deliveryListPage = async (req, res) => {
       totalPages: totalPages,
     };
 
-    if (!thisUserDeliveryList.length) {
-      req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
-    }
-
+    console.log(thisUserValidDeliveryList);
     res.render('admin/deliveryList', {
-      thisUserDeliveryList,
+      thisUserValidDeliveryList,
       pagination,
       page,
       perPage,
@@ -995,9 +1011,60 @@ const deliveryListPage = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
+    // req.flash('error', error)
+    // return res.redirect('somethingWrong');
+  }
+};
+
+const deliveryDetailsPage = async (req, res) => {
+  try {
+    const delivery = await DeliveryList.findById(req.params.deliveryId)
+      .populate({
+        path: 'logisticsOrder_id',
+        model: 'LogisticsOrder',
+        select: 'status description address paymentStatus paymentAmount deliveryType'
+      })
+      .populate({
+        path: 'user_id',
+        model: 'User',
+        select: 'username phone email role status'
+      });
+
+    if (delivery) {
+      return res.render('admin/deliveryDetails', { delivery })
+    }
+
+    req.flash('error', 'Something wrong, please try again...');
+    return redirect('/admin/deliveryList');
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+const removeFromDeliveryList = async (req, res) => {
+  try {
+    const deliveryId = req.params.deliveryId;
+    const delivery = await DeliveryList.findById(deliveryId);
+    const updateLogisticOrderStatus = await LogisticsOrder.findByIdAndUpdate(
+      delivery.logisticsOrder_id,
+      {
+        status: 'Order Posted to Feed',
+      }
+    );
+
+    await updateLogisticOrderStatus.save();
+    // Remove user from the database
+    await DeliveryList.findByIdAndDelete(delivery._id);
+
+    req.flash('success', 'Remove from your "Delivery List" successfully!')
+    res.redirect('/admin/deliveryList');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
   }
 }
-
 
 module.exports = {
   createLogisticsOrderPage,
@@ -1011,4 +1078,6 @@ module.exports = {
   logisticsOrderDetailsPage,
   addToDeliveryList,
   deliveryListPage,
-}
+  deliveryDetailsPage,
+  removeFromDeliveryList,
+};

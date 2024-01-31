@@ -21,16 +21,16 @@
 
     <!-- News feed grid -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <% thisUserDeliveryList.forEach((delivery, index) => { %>
+        <% thisUserValidDeliveryList.forEach((delivery, index) => { %>
             <div class="col">
-              <a href="/admin/logisticsOrderFeed/logisticsOrderDetails/" class="text-decoration-none text-muted">
+              <a href="/admin/deliveryList/deliveryDetails/<%= delivery._id %>" class="text-decoration-none text-muted">
                 <div class="card border-2">
                     <div class="card-body">
                       <h5 class="card-title"><strong>Delivery List <%= (page - 1) * perPage + index + 1 %></strong></h5>
                       <hr>
                       <p class="card-text"><strong>Order ID: </strong><br><%= delivery.logisticsOrder_id._id %></p>
                       <p class="card-text"><strong>Created By User: </strong><br><%= delivery.user_id.username %></p>
-                      <p class="card-text"><strong>Status: </strong><br><%= delivery.logisticsOrder_id.status %></p>
+                      <p class="card-text"><strong>Status: </strong><br><%= delivery.logisticsOrder_id.status %>(Your)</p>
                       <p class="card-text"><strong>Description: </strong><br><%= delivery.logisticsOrder_id.description %></p>
                       <p class="card-text"><strong>Reciver: </strong><br>...</p>
                       <p class="card-text"><strong>Phone NO.: </strong><br>...</p>
@@ -59,7 +59,7 @@
       </div>
 
     <!-- Pagination links -->
-    <div class="d-flex justify-content-between mt-3">
+    <div class="d-flex justify-content-between m-3">
       <% if (pagination.prev) { %>
         <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
       <% } %>
@@ -70,6 +70,12 @@
         <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
       <% } %>
     </div>
+
+    <% if (thisUserValidDeliveryList.length >= 1) { %>
+      <div class="d-grid p-5 sticky-bottom">
+        <a href="/admin/deliveryList/deliveryDetails/startDeliver" class="btn btn-primary btn-lg">Start deliver</a>
+      </div>
+    <% } %>
   </div>
 
   <footer>

@@ -71,7 +71,7 @@ app.use(function (err, req, res, next) {
 
 module.exports = app;
 
-// Stop at updating the `editLogisticsOrder()`.
+// Stop at create "Delivery List details" EJS page and "Start Delivery" function.
 
 // Stop at create EJS:
 // 1. Logistic order draft.
@@ -87,3 +87,4 @@ module.exports = app;
 //    * In "Edit Logistics Order" from User B, like "User ID"...
 // 2. Add "Reciver", "Phone" and "PaymentType" field to the "Logistic order" model.
 // 3. Change the "UserB" to "CustomerService" and "UserC" to "Runner".
+// 4. The `logisticsOrderPendingListPage()` need to change it only show the create by current user "Logistics Order Pending List".
