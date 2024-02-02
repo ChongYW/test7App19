@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <%- include('./partials/header'); %>
-  <title>Delivery List</title>
+  <title>Start Deliver List</title>
 </head>
 
 <body>
@@ -15,15 +15,14 @@
   <%- include('./partials/flashMessage'); %>
 
   <div class="container mt-5">
-    <h1 class="mb-4">Delivery List</h1>
+    <h1 class="mb-4">Start Deliver List</h1>
 
     <!-- Search form -->
 
-    <!-- News feed grid -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <% thisUserValidDeliveryList.forEach((delivery, index) => { %>
             <div class="col">
-              <a href="/admin/deliveryList/deliveryDetails/<%= delivery._id %>" class="text-decoration-none text-muted">
+              <a href="/admin/startDeliverList/logisticsOrderDetailsAndActions/<%= delivery._id %>" class="text-decoration-none text-muted">
                 <div class="card border-2">
                     <div class="card-body">
                       <h5 class="card-title"><strong>Delivery List <%= (page - 1) * perPage + index + 1 %></strong></h5>
@@ -48,9 +47,7 @@
                       <p class="card-text"><strong>Delivery Type: </strong><br><%= delivery.logisticsOrder_id.deliveryType %></p>
                       
                       <hr>
-                        <div class="btn btn-secondary d-flex justify-content-center text-center">
-                            Details
-                        </div>
+                        <div class="btn btn-secondary d-flex justify-content-center text-center">More actions</div>
                     </div>
                 </div>
               </a>
@@ -72,21 +69,18 @@
     </div>
 
     <% if (thisUserValidDeliveryList.length >= 1) { %>
-      <div class="row p-5 sticky-bottom">
-        <!-- <div class="d-grid p-5 sticky-bottom">
-          <form action="/admin/deliveryList/deliveryDetails/startDeliver" method="put">
-            <a class="btn btn-primary btn-lg"><button type="submit">Start deliver</button></a>
-          </form> -->
-          
-          <form class="col-12 mb-2" method="post" action="/admin/deliveryList/deliveryDetails/startDeliver"
-          onsubmit="return confirm('Start the deliver mode?');">
-            <a class="w-100">
-            <button class="btn btn-primary btn-lg w-100" type="submit">Start deliver</button>
-            </a>
+      <!-- <div class="row p-5 sticky-bottom">
+        
+        <form class="col-12 mb-2" method="post" action="/admin/deliveryList/deliveryDetails/startDeliver"
+          onsubmit="return confirm('Quit deliver mode?');">
+          <a class="w-100">
+            <button class="btn btn-danger btn-lg w-100" type="submit">Quit deliver mode</button>
+          </a>
         </form>
-  
-      </div>
+
+      </div> -->
     <% } %>
+
   </div>
 
   <footer>

@@ -71,7 +71,9 @@ app.use(function (err, req, res, next) {
 
 module.exports = app;
 
-// Stop at create "Delivery List details" EJS page and "Start Delivery" function.
+// Stop at create "logisticsOrderDetailsAndActions()" function.
+// Stop at create "Start Deliver List" EJS page and function.
+// Stop at debugging `startDeliver()` function.
 
 // Stop at create EJS:
 // 1. Logistic order draft.

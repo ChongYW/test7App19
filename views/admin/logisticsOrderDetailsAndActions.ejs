@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <%- include('./partials/header'); %>
-  <title>Logistics Orders Details</title>
+  <title>Logistics Order Details and Actions</title>
 </head>
 
 <body>
@@ -15,7 +15,7 @@
   <%- include('./partials/flashMessage'); %>
 
   <div class="container mt-5">
-    <h1 class="mb-4">Logistics Orders Details</h1>
+    <h1 class="mb-4">Logistics Order Details and Actions</h1>
 
     <div class="card">
         <div class="card-header">
@@ -42,14 +42,22 @@
     
             <hr>
             <div class="row">
-              <form action="/admin/deliveryList/deliveryDetails/removeFromDeliveryList/<%= delivery._id %>" method="post" class="col-md-6 mb-2">
-                  <a href="#" class="btn btn-danger w-100">
-                      <button class="btn btn-danger w-100" type="submit">Remove from Delivery list</button>
+              <form action="<%= delivery._id %>" method="post" onsubmit="return confirm('Confirm update?');">
+                <label for="status" class="form-label">Status:</label>
+                <select id="status" name="status" class="form-select my-2">
+                  <option value="Delivered Successfully">Delivered Successfully</option>
+                  <option value="Returning">Returning</option>
+                  <option value="Delivery Attempted">Delivery Attempted</option>
+                  <option value="Cancel Delivery">Cancel Delivery</option>
+                </select>
+
+                  <a href="#" class="btn btn-success w-100 my-2">
+                      <button class="btn btn-success w-100" type="submit">Update</button>
                   </a>
               </form>
       
-              <div class="col-md-6 mb-2">
-                  <a href="/admin/deliveryList" class="btn btn-secondary w-100">
+              <div class="my-2">
+                  <a href="/admin/startDeliverList" class="btn btn-secondary w-100">
                       <button class="btn btn-secondary w-100">Back</button>
                   </a>
               </div>
