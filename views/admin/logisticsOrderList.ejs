@@ -32,14 +32,19 @@
               <option value="createdByUser">Created By User(ID)</option>
               <option value="status">Status</option>
               <option value="description">Description</option>
+              <option value="customerType">Customer Type</option>
+              <option value="customerName">Customer Name</option>
+              <option value="customerContact">Customer Contact</option>
               <option value="address.address1">Address Line 1</option>
               <option value="address.address2">Address Line 2</option>
               <option value="address.city">City</option>
               <option value="address.postalCode">Postal Code</option>
               <option value="address.country">Country</option>
               <option value="paymentStatus">Payment Status</option>
+              <option value="paymentType">Payment Type</option>
               <option value="paymentAmount">Payment Amount</option>
               <option value="deliveryType">Delivery Type</option>
+              <option value="remark">Remark</option>
               <option value="createdAt">Created At</option>
               <option value="updatedAt">Updated At</option>
             </select>
@@ -60,14 +65,19 @@
               <th>Created By User(ID)</th>
               <th>Status</th>
               <th>Description</th>
+              <th>Customer Type</th>
+              <th>Customer Name</th>
+              <th>Customer Contact</th>
               <th>Address Line 1</th>
               <th>Address Line 2</th>
               <th>City</th>
               <th>Postal Code</th>
               <th>Country</th>
               <th>Payment Status</th>
+              <th>Payment Type</th>
               <th>Payment Amount</th>
               <th>Delivery Type</th>
+              <th>Remark</th>
               <th>Created At</th>
               <th>Updated At</th>
               <th>Actions</th>
@@ -76,19 +86,24 @@
           <tbody>
             <% logisticsOrders.forEach((logisticsOrder, index) => { %>
               <tr>
-                <td><%= index + 1 %></td>
+                <td><%= (page - 1) * perPage + index + 1 %></td>
                 <td><%= logisticsOrder._id %></td>
                 <td><%= logisticsOrder.createdByUser %></td>
                 <td><%= logisticsOrder.status %></td>
                 <td><%= logisticsOrder.description %></td>
+                <td><%= logisticsOrder.customerType %></td>
+                <td><%= logisticsOrder.customerName %></td>
+                <td><%= logisticsOrder.customerContact %></td>
                 <td><%= logisticsOrder.address.address1 %></td>
                 <td><%= logisticsOrder.address.address2 %></td>
                 <td><%= logisticsOrder.address.city %></td>
                 <td><%= logisticsOrder.address.postalCode %></td>
                 <td><%= logisticsOrder.address.country %></td>
                 <td><%= logisticsOrder.paymentStatus %></td>
+                <td><%= logisticsOrder.paymentType %></td>
                 <td><%= logisticsOrder.paymentAmount %></td>
                 <td><%= logisticsOrder.deliveryType %></td>
+                <td><%= logisticsOrder.remark %></td>
                 <td><%= logisticsOrder.createdAt %></td>
                 <td><%= logisticsOrder.updatedAt %></td>
                 <td>

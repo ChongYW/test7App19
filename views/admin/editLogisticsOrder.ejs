@@ -70,6 +70,24 @@
         </div>
 
         <div class="mb-3">
+          <label for="customerType" class="form-label">Customer Type:</label>
+          <select id="customerType" name="customerType" class="form-select">
+              <option value="New customer" <%= logisticsOrder.customerType === 'New customer' ? 'selected' : '' %>>New customer</option>
+              <option value="Repeat Order" <%= logisticsOrder.customerType === 'Repeat Order' ? 'selected' : '' %>>Repeat Order</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="customerName" class="form-label">Customer Name:</label>
+          <input class="form-control" id="customerName" name="customerName" value="<%= logisticsOrder.customerName %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="customerContact" class="form-label">Customer Contact:</label>
+          <input class="form-control" id="customerContact" name="customerContact" value="<%= logisticsOrder.customerContact %>" required>
+        </div>
+
+        <div class="mb-3">
           <label for="address1" class="form-label">Address 1:</label>
           <input type="text" class="form-control" id="address1" name="address.address1" value="<%= logisticsOrder.address.address1 %>" required>
         </div>
@@ -100,13 +118,23 @@
         </div>
 
         <div class="mb-3">
-          <label for="paymentAmount" class="form-label">Payment Amount:</label>
-          <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" required>
+          <label for="paymentType" class="form-label">Payment Type:</label>
+          <input type="text" class="form-control" id="paymentType" name="paymentType" value="<%= logisticsOrder.paymentType %>" required>
         </div>
+
+        <div class="mb-3">
+          <label for="paymentAmount" class="form-label">Payment Amount:</label>
+          <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
+      </div>
 
         <div class="mb-3">
           <label for="deliveryType" class="form-label">Delivery Type:</label>
           <input type="text" class="form-control" id="deliveryType" name="deliveryType" value="<%= logisticsOrder.deliveryType %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="remark" class="form-label">Remark:</label>
+          <textarea class="form-control" id="remark" name="remark"><%= logisticsOrder.remark %></textarea>
         </div>
 
         <div class="row p-3">

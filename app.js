@@ -15,7 +15,7 @@ const errorMiddleware = require('./middlewares/errorMiddleware');
 const cacheControlMiddleware = require('./middlewares/cacheControlMiddleware');
 
 const adminRoute = require('./routes/admin/adminRoute');
-const userBRoute = require('./routes/userB/userBRoute');
+const customerServiceRoute = require('./routes/customerService/customerServiceRoute');
 const loginRoute = require('./routes/loginRoute');
 
 connectDb();
@@ -47,7 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', loginRoute);
 // app.use('/admin', adminRoute);
 app.use('/admin', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isAdmin, adminRoute);
-app.use('/userB', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isUserB, userBRoute);
+app.use('/userB', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isCustomerService, customerServiceRoute);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -71,6 +71,8 @@ app.use(function (err, req, res, next) {
 
 module.exports = app;
 
+// Stop at debugging "updateProfile()" function.
+// Stop at create "updateProfile()" function.
 // Stop at create "logisticsOrderDetailsAndActions()" function.
 // Stop at create "Start Deliver List" EJS page and function.
 // Stop at debugging `startDeliver()` function.

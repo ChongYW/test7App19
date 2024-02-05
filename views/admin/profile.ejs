@@ -12,9 +12,64 @@
     <%- include('./partials/navbar'); %>
   </header>
 
+  <%- include('./partials/flashMessage'); %>
+
   <div class="container mt-5">
-    <h1 class="mb-4">Welcome to the Admin Profile!</h1>
-    <p>This is a secure area accessible only by admin users.</p>
+
+    <div class="border rounded p-5">
+
+        <h1 class="mb-4">Profile</h1>
+
+        <form method="post" action="/admin/profile/updateProfile">
+
+          <div class="mb-3">
+            <label for="_id" class="form-label">User ID(Can't edit):</label>
+            <input class="form-control" id="_id" name="_id" value="<%= user._id %>" disabled>
+          </div>
+
+            <div class="mb-3">
+              <label for="username" class="form-label">Username(Can't edit):</label>
+              <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" disabled>
+            </div>
+        
+            <div class="mb-3">
+              <label for="password" class="form-label">Password:</label>
+              <input type="password" class="form-control" id="password" name="password" value="<%= user.password %>" placeholder="Leave it blank and save will remain the same.">
+            </div>
+        
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone:</label>
+              <input type="number" class="form-control" id="phone" name="phone" placeholder="<%= user.phone %>">
+            </div>
+        
+            <div class="mb-3">
+              <label for="email" class="form-label">Email:</label>
+              <input type="email" class="form-control" id="email" name="email" placeholder="<%= user.email %>">
+            </div>
+        
+            <div class="mb-3">
+              <label for="role" class="form-label">Role(Can't edit):</label>
+              <input class="form-control" id="role" name="role" value="<%= user.role %>" disabled>
+            </div>
+        
+            <div class="row pt-4">
+              <div class="col-md-6 mb-2">
+                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+              </div>
+
+              <div class="col-md-6 mb-2">
+                <a href="/admin/dashboard" class="btn btn-secondary w-100">Back</a>
+              </div>
+            </div>
+
+          </form>
+
+          <!-- <a href="/admin/dashboard">
+            <button class="btn btn-secondary mt-3">Back</button>
+          </a> -->
+          
+    </div>
+    
   </div>
 
 <footer>

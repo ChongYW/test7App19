@@ -45,8 +45,8 @@
             <div class="mb-3">
               <label for="role" class="form-label">Role:</label>
               <select class="form-select" id="role" name="role" required>
-                <option value="userB" <%= user.role === 'userB' ? 'selected' : '' %>>User B</option>
-                <option value="userC" <%= user.role === 'userC' ? 'selected' : '' %>>User C</option>
+                <option value="customerService" <%= user.role === 'customerService' ? 'selected' : '' %>>Customer Service</option>
+                <option value="runner" <%= user.role === 'runner' ? 'selected' : '' %>>Runner</option>
                 <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
               </select>
             </div>

@@ -12,8 +12,9 @@ const deliveryListSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    deliveredAt: Date
-},{
+    deliveredAt: Date,
+    remark: { type: String }, // Added after
+}, {
     timestamps: true
 });
 

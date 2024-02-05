@@ -24,6 +24,9 @@
         <div class="card-body">
             <!-- <h5 class="card-title">Special title treatment</h5> -->
             <p class="card-text"><strong>Description: </strong><br><%= logisticsOrder.description %></p>
+            <p class="card-text"><strong>Customer Type: </strong><br><%= logisticsOrder.customerType %></p>
+            <p class="card-text"><strong>Customer Name: </strong><br><%= logisticsOrder.customerName %></p>
+            <p class="card-text"><strong>Customer Contact: </strong><br><%= logisticsOrder.customerContact %></p>
             <p class="card-text">
                 <strong>Address:</strong><br>
                 <%= logisticsOrder.address.address1 %><br>
@@ -33,8 +36,10 @@
                 <%= logisticsOrder.address.country %>
             </p>
             <p class="card-text"><strong>Payment Status: </strong><br><%= logisticsOrder.paymentStatus %></p>
+            <p class="card-text"><strong>Payment Type: </strong><br><%= logisticsOrder.paymentType %></p>
             <p class="card-text"><strong>Payment Amount: </strong><br><%= logisticsOrder.paymentAmount %></p>
             <p class="card-text"><strong>Delivery Type: </strong><br><%= logisticsOrder.deliveryType %></p>
+            <p class="card-text"><strong>Remark: </strong><br><%= logisticsOrder.remark %></p>
     
             <hr>
             <div class="row">

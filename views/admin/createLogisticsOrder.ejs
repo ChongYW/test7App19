@@ -26,6 +26,24 @@
             <label for="description" class="form-label">Description:</label>
             <textarea class="form-control" id="description" name="description"><%= typeof description !== 'undefined' ? description : '' %></textarea>
           </div>
+
+          <div class="mb-3">
+            <label for="customerType" class="form-label">Customer Type:</label>
+            <select id="customerType" name="customerType" class="form-select">
+                <option value="New customer">New customer</option>
+                <option value="Repeat Order">Repeat Order</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="customerName" class="form-label">Customer Name:</label>
+            <input type="text" class="form-control" id="customerName" name="customerName" value="<%= typeof customerName !== 'undefined' ? customerName : '' %>" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="customerContact" class="form-label">Customer Contact:</label>
+            <input type="text" class="form-control" id="customerContact" name="customerContact" value="<%= typeof customerContact !== 'undefined' ? customerContact : '' %>" required>
+          </div>
         
             <div class="mb-3">
               <label class="form-label">Include Address?</label>
@@ -68,15 +86,25 @@
               <label for="paymentStatus" class="form-label">Payment Status:</label>
               <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" value="<%= typeof paymentStatus !== 'undefined' ? paymentStatus : '' %>" required>
             </div>
+
+            <div class="mb-3">
+              <label for="paymentType" class="form-label">Payment Type:</label>
+              <input type="text" class="form-control" id="paymentType" name="paymentType" value="<%= typeof paymentType !== 'undefined' ? paymentType : '' %>" required>
+            </div>
         
             <div class="mb-3">
               <label for="paymentAmount" class="form-label">Payment Amount:</label>
-              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" required>
+              <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" step="0.01" required>
             </div>
         
             <div class="mb-3">
               <label for="deliveryType" class="form-label">Delivery Type:</label>
               <input type="text" class="form-control" id="deliveryType" name="deliveryType" value="<%= typeof deliveryType !== 'undefined' ? deliveryType : '' %>" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="remark" class="form-label">Remark:</label>
+              <textarea class="form-control" id="remark" name="remark"><%= typeof remark !== 'undefined' ? remark : '' %></textarea>
             </div>
         
             <button type="submit" class="btn btn-primary">Create Order</button>

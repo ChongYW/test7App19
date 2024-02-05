@@ -45,14 +45,19 @@
                   <option value="createdByUser" <%= searchField === 'createdByUser' ? 'selected' : '' %>>Created By User(ID or Username)</option>
                   <option value="status" <%= searchField === 'status' ? 'selected' : '' %>>Status</option>
                   <option value="description" <%= searchField === 'description' ? 'selected' : '' %>>Description</option>
+                  <option value="customerType" <%= searchField === 'customerType' ? 'selected' : '' %>>Customer Type</option>
+                  <option value="customerName" <%= searchField === 'customerName' ? 'selected' : '' %>>Customer Name</option>
+                  <option value="customerContact" <%= searchField === 'customerContact' ? 'selected' : '' %>>Customer Contact</option>
                   <option value="address.address1" <%= searchField === 'address.address1' ? 'selected' : '' %>>Address Line 1</option>
                   <option value="address.address2" <%= searchField === 'address.address2' ? 'selected' : '' %>>Address Line 2</option>
                   <option value="address.city" <%= searchField === 'address.city' ? 'selected' : '' %>>City</option>
                   <option value="address.postalCode" <%= searchField === 'address.postalCode' ? 'selected' : '' %>>Postal Code</option>
                   <option value="address.country" <%= searchField === 'address.country' ? 'selected' : '' %>>Country</option>
                   <option value="paymentStatus" <%= searchField === 'paymentStatus' ? 'selected' : '' %>>Payment Status</option>
+                  <option value="paymentType" <%= searchField === 'paymentType' ? 'selected' : '' %>>Payment Type</option>
                   <option value="paymentAmount" <%= searchField === 'paymentAmount' ? 'selected' : '' %>>Payment Amount</option>
                   <option value="deliveryType" <%= searchField === 'deliveryType' ? 'selected' : '' %>>Delivery Type</option>
+                  <option value="remark" <%= searchField === 'remark' ? 'selected' : '' %>>Remark</option>
                   <option value="createdAt" <%= searchField === 'createdAt' ? 'selected' : '' %>>Created At</option>
                   <option value="updatedAt" <%= searchField === 'updatedAt' ? 'selected' : '' %>>Updated At</option>
               </select>
@@ -70,9 +75,22 @@
             <tr>
               <th>NO.</th>
               <th>Logistics Order ID</th>
+              <th>Created By User(ID)</th>
               <th>Status</th>
               <th>Description</th>
+              <th>Customer Type</th>
+              <th>Customer Name</th>
+              <th>Customer Contact</th>
+              <th>Address Line 1</th>
+              <th>Address Line 2</th>
+              <th>City</th>
+              <th>Postal Code</th>
+              <th>Country</th>
+              <th>Payment Status</th>
+              <th>Payment Type</th>
+              <th>Payment Amount</th>
               <th>Delivery Type</th>
+              <th>Remark</th>
               <th>Created At</th>
               <th>Updated At</th>
               <th>Actions</th>
@@ -83,9 +101,22 @@
               <tr>
                 <td><%= (page - 1) * perPage + index + 1 %></td>
                 <td><%= logisticsOrder._id %></td>
+                <td><%= logisticsOrder.createdByUser %></td>
                 <td><%= logisticsOrder.status %></td>
                 <td><%= logisticsOrder.description %></td>
+                <td><%= logisticsOrder.customerType %></td>
+                <td><%= logisticsOrder.customerName %></td>
+                <td><%= logisticsOrder.customerContact %></td>
+                <td><%= logisticsOrder.address.address1 %></td>
+                <td><%= logisticsOrder.address.address2 %></td>
+                <td><%= logisticsOrder.address.city %></td>
+                <td><%= logisticsOrder.address.postalCode %></td>
+                <td><%= logisticsOrder.address.country %></td>
+                <td><%= logisticsOrder.paymentStatus %></td>
+                <td><%= logisticsOrder.paymentType %></td>
+                <td><%= logisticsOrder.paymentAmount %></td>
                 <td><%= logisticsOrder.deliveryType %></td>
+                <td><%= logisticsOrder.remark %></td>
                 <td><%= logisticsOrder.createdAt %></td>
                 <td><%= logisticsOrder.updatedAt %></td>
                 <td>

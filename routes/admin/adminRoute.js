@@ -5,7 +5,10 @@ const logisticsOrderController = require('../../controllers/admin/logisticsOrder
 const authenticationMiddleware = require('../../middlewares/authenticationMiddleware');
 
 route.get('/dashboard', authenticationMiddleware.ensureAuthenticated, adminController.dashboardPage);
+
+// profile.ejs
 route.get('/profile', authenticationMiddleware.ensureAuthenticated, adminController.profilePage);
+route.post('/profile/updateProfile', authenticationMiddleware.ensureAuthenticated, adminController.updateProfile);
 
 // createUser.ejs
 route.get('/createUser', authenticationMiddleware.ensureAuthenticated, adminController.createUserPage);
@@ -38,13 +41,13 @@ route.get('/logisticsOrderFeed', authenticationMiddleware.ensureAuthenticated, l
 
 // logisticsOrderDetails.ejs
 route.get('/logisticsOrderFeed/logisticsOrderDetails/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderDetailsPage);
-route.post('/logisticsOrderFeed/logisticsOrderDetails/addToDeliveryList/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.addToDeliveryList)
+route.post('/logisticsOrderFeed/logisticsOrderDetails/addToDeliveryList/:logisticsOrderId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.addToDeliveryList);
 
 // deliveryList.ejs
 route.get('/deliveryList', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryListPage);
 
 // deliveryDetails.ejs
-route.get('/deliveryList/deliveryDetails/:deliveryId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryDetailsPage);
+route.get('/deliveryList/deliveryDetails/:deliveryId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.deliveryDetailsPage);// here
 route.post('/deliveryList/deliveryDetails/removeFromDeliveryList/:deliveryId', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.removeFromDeliveryList);
 
 // startDeliver.ejs

@@ -3,6 +3,132 @@ const passport = require('passport');
 const validator = require('validator');
 const mongoose = require('mongoose');
 const paginate = require('express-paginate');
+const bcrypt = require('bcrypt');
+
+const dashboardPage = (req, res) => {
+  res.render('admin/dashboard');
+}
+
+const profilePage = (req, res) => {
+  const user = req.user;
+  res.render('admin/profile', { user });
+}
+
+const updateProfile = async (req, res) => {
+  let isValid = true;
+
+  try {
+    const user = req.user;
+
+    const {
+      password,
+      phone,
+      email,
+    } = req.body;
+
+    if (password && !validator.isLength(password, { min: 6 })) {
+      isValid = false;
+      req.flash('error', 'Password must be at least 6 characters long.');
+    }
+
+    if (phone) {
+      if (phone.length < 11 || phone.length > 12 || !validator.isMobilePhone(phone, 'any', { strictMode: false })) {
+        isValid = false;
+        req.flash('error', 'Invalid phone number.');
+      }
+
+      const userPhoneAvailable = await User.findOne({ phone: phone.trim(), _id: { $ne: user._id } });
+      if (userPhoneAvailable) {
+        isValid = false;
+        req.flash('error', 'Phone already registered');
+      }
+    }
+
+
+    if (email) {
+      if (!validator.isEmail(email)) {
+        isValid = false;
+        req.flash('error', 'Invalid email.');
+      }
+
+      const userEmailAvailable = await User.findOne({ email: email.trim(), _id: { $ne: user._id } });
+      if (userEmailAvailable) {
+        isValid = false;
+        req.flash('error', 'Email already registered');
+      }
+    }
+
+    if (isValid) {
+      // Check if the password field is empty
+      if (password) {
+
+        try {
+          await new Promise((resolve, reject) => {
+            user.setPassword(password, (err) => {
+              if (err) {
+                console.error(err);
+                req.flash('error', 'Error updating password.');
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          });
+
+          await user.save();
+
+        } catch (error) {
+          console.log(error);
+          return res.redirect('/admin/profile');
+        }
+      }
+
+      if (phone || email) {
+        let updatedField = {};
+
+        if (phone) {
+          updatedField.phone = phone;
+        }
+
+        if (email) {
+          updatedField.email = email;
+        }
+
+        const updatedProfile = await User.findByIdAndUpdate(
+          user._id,
+          updatedField,
+          { new: true }
+        );
+
+        await updatedProfile.save();
+
+      }
+
+      req.flash('success', 'Profile updated successfully!');
+
+    } else {
+
+      // Render the edit form with the input values if there's an issue
+      return res.render('admin/profile', {
+        user: {
+          _id: user._id,
+          username: user.username,
+          password, // Note: For security reasons, you might not want to show the existing password in the form
+          phone: user.phone,
+          email: user.email,
+          role: user.role,
+        }
+      });
+
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+
+  // req.flash('success', 'Profile updated successfully!');
+  return res.redirect('/admin/profile');
+};
 
 // const createUser = async (req, res) => {
 //     try {
@@ -15,13 +141,13 @@ const paginate = require('express-paginate');
 //         role: 'userB',
 //         status: 'active',
 //       };
-  
+
 //       // Create a new user object with hardcoded data
 //       const newUser = new User(hardcodedUser);
-  
+
 //       // Use passport-local-mongoose's register method to create a new user
 //       await User.register(newUser, hardcodedUser.password);
-  
+
 //       // Respond based on your application's needs
 //       res.status(201).json({ message: 'User registered successfully.' });
 //     } catch (err) {
@@ -67,7 +193,7 @@ const createUser = async (req, res) => {
     req.flash('error', 'Invalid email.');
   }
 
-  const allowedRoleValue = ['admin', 'userB', 'userC'];
+  const allowedRoleValue = ['admin', 'customerService', 'runner'];
   if (!allowedRoleValue.includes(role)) {
     isValid = false;
     req.flash('error', 'Invalid role.');
@@ -117,14 +243,6 @@ const createUser = async (req, res) => {
     status
   });
 };
-
-const dashboardPage = (req, res) => {
-    res.render('admin/dashboard');
-}
-
-const profilePage = (req, res) =>{
-  res.render('admin/profile');
-}
 
 // const userListPage = async (req, res) =>{
 //   try {
@@ -190,7 +308,7 @@ const profilePage = (req, res) =>{
 //             return res.redirect('/admin/userList');
 //           }
 //           break;
-          
+
 //         case 'username':
 //         case 'phone':
 //         case 'email':
@@ -203,29 +321,29 @@ const profilePage = (req, res) =>{
 //         case 'updatedAt': // Add support for updatedAt
 //           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
 //           const startDate = new Date(searchQuery);
-          
+
 //           // Check if startDate is a valid date
 //           if (isNaN(startDate.getTime())) {
 //             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
 //             return res.redirect('/admin/userList');
 //           }
-    
+
 //           // Set the time to the beginning of the day
 //           startDate.setHours(0, 0, 0, 0);
-    
+
 //           // Create the endDate by setting the time to the end of the day
 //           const endDate = new Date(startDate);
 //           endDate.setHours(23, 59, 59, 999);
-    
+
 //           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
 //           break;
-        
+
 //         default:
 //           req.flash('warning', 'Invalid search field.');
 //           return res.redirect('/admin/userList');
 //       }
 //     }
-    
+
 
 //     const [users, itemCount] = await Promise.all([
 //       User.find(query).skip(skip).limit(perPage).exec(),
@@ -282,7 +400,7 @@ const userListPage = async (req, res) => {
             return res.redirect('/admin/userList');
           }
           break;
-          
+
         case 'username':
         case 'phone':
         case 'email':
@@ -295,29 +413,29 @@ const userListPage = async (req, res) => {
         case 'updatedAt': // Add support for updatedAt
           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
           const startDate = new Date(searchQuery);
-          
+
           // Check if startDate is a valid date
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
             return res.redirect('/admin/userList');
           }
-    
+
           // Set the time to the beginning of the day
           startDate.setHours(0, 0, 0, 0);
-    
+
           // Create the endDate by setting the time to the end of the day
           const endDate = new Date(startDate);
           endDate.setHours(23, 59, 59, 999);
-    
+
           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
           break;
-        
+
         default:
           req.flash('warning', 'Invalid search field.');
           return res.redirect('/admin/userList');
       }
     }
-    
+
     const users = await User.find(query).skip(skip).limit(perPage);
     const totalusers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalusers / perPage);
@@ -328,7 +446,7 @@ const userListPage = async (req, res) => {
       current: page,
       totalPages: totalPages,
     };
-    
+
     if (users.length === 0 && searchQuery) {
       req.flash('warning', `No user found based on the input "${searchQuery}" for the field "${searchField}".`);
     }
@@ -342,7 +460,7 @@ const userListPage = async (req, res) => {
 };
 
 
-const editUserPage = async (req, res) =>{
+const editUserPage = async (req, res) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId);
@@ -391,7 +509,7 @@ const editUser = async (req, res) => {
       req.flash('error', 'Invalid email.');
     }
 
-    const allowedRoleValue = ['admin', 'userB', 'userC'];
+    const allowedRoleValue = ['admin', 'customerService', 'runner'];
     if (!allowedRoleValue.includes(role)) {
       isValid = false;
       req.flash('error', 'Invalid role.');
@@ -473,7 +591,7 @@ const editUser = async (req, res) => {
 };
 
 // Move this to "/userList/edit/:userId" when is done, and if is edit own profile will not able to delete it self.
-const deleteUser = async (req, res) =>{
+const deleteUser = async (req, res) => {
   try {
     const userId = req.params.userId;
     // Remove user from the database
@@ -485,7 +603,7 @@ const deleteUser = async (req, res) =>{
   }
 }
 
-const deleteEditUser = async (req, res) =>{
+const deleteEditUser = async (req, res) => {
   try {
     const userId = req.params.userId;
     // Remove user from the database
@@ -497,18 +615,19 @@ const deleteEditUser = async (req, res) =>{
   }
 }
 
-const logout = (req, res) =>{
-  req.logout(function(err) {
+const logout = (req, res) => {
+  req.logout(function (err) {
     if (err) { return next(err); }
     res.redirect('/login');
   });
 }
 
 module.exports = {
-  createUserPage,
-  createUser,
   dashboardPage,
   profilePage,
+  updateProfile,
+  createUserPage,
+  createUser,
 
   userListPage,
   editUserPage,

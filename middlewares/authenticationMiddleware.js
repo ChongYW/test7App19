@@ -8,7 +8,7 @@ const ensureAuthenticated = (req, res, next) => {
   req.flash('warning', 'Before using this function, you need to be logged in!');
   res.redirect('/login');
 };
-  
+
 // Middleware to check if the user is not authenticated
 const ensureNotAuthenticated = (req, res, next) => {
   if (!req.isAuthenticated()) {
@@ -17,28 +17,28 @@ const ensureNotAuthenticated = (req, res, next) => {
 
   let redirectURL = '/login';
 
-    if (req.user && req.user.role === 'admin') {
-        redirectURL = '/admin/dashboard';
-      }else if(req.user && req.user.role === 'userB'){
-        redirectURL = '/userB/dashboard';
-      }else{
-        redirectURL = '/userC/dashboard';
-      }
+  if (req.user && req.user.role === 'admin') {
+    redirectURL = '/admin/dashboard';
+  } else if (req.user && req.user.role === 'customerService') {
+    redirectURL = '/customerService/dashboard';
+  } else {
+    redirectURL = '/runner/dashboard';
+  }
 
-      req.flash('warning', 'You already logged in, this action is no needed.');
-      return res.render('somethingWrong', {redirectURL});
+  req.flash('warning', 'You already logged in, this action is no needed.');
+  return res.render('somethingWrong', { redirectURL });
 
 };
-  
-const isRole = (role) => (req, res, next) =>{
-  if(req.isAuthenticated() && req.user.role === role){
+
+const isRole = (role) => (req, res, next) => {
+  if (req.isAuthenticated() && req.user.role === role) {
     return next();
   }
 
-  let redirectURL = '/'+ req.user.role + '/dashboard';
-      req.flash('error', 'You are not authorized to perform this operation!');
-      res.render('somethingWrong', {redirectURL});
-      
+  let redirectURL = '/' + req.user.role + '/dashboard';
+  req.flash('error', 'You are not authorized to perform this operation!');
+  res.render('somethingWrong', { redirectURL });
+
 }
 // For debbuging (2/2) end.
 
@@ -52,7 +52,7 @@ const isRole = (role) => (req, res, next) =>{
 //   authenticationError.status = 401;
 //   next(authenticationError);
 // };
-  
+
 // // Middleware to check if the user is not authenticated
 // const ensureNotAuthenticated = (req, res, next) => {
 //   if (!req.isAuthenticated()) {
@@ -63,7 +63,7 @@ const isRole = (role) => (req, res, next) =>{
 //   authenticationError.status = 302;
 //   next(authenticationError);
 // };
-  
+
 // const isRole = (role) => (req, res, next) =>{
 //   if(req.isAuthenticated() && req.user.role === role){
 //     return next();
@@ -75,13 +75,13 @@ const isRole = (role) => (req, res, next) =>{
 // }
 
 const isAdmin = isRole('admin');
-const isUserB = isRole('userB');
-const isUserC = isRole('userC');
+const isCustomerService = isRole('customerService');
+const isRunner = isRole('runner');
 
 module.exports = {
   ensureAuthenticated,
   ensureNotAuthenticated,
   isAdmin,
-  isUserB,
-  isUserC,
+  isCustomerService,
+  isRunner,
 };

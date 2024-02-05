@@ -13,11 +13,16 @@ const createLogisticsOrder = async (req, res) => {
   // Extract address details
   const {
     description,
+    customerType,
+    customerName,
+    customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
     paymentStatus,
+    paymentType,
     paymentAmount,
-    deliveryType
+    deliveryType,
+    remark
   } = req.body;
 
   try {
@@ -30,9 +35,29 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
       }
 
+      if (!customerType.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Type must be filled in.');
+      }
+
+      if (!customerName.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Name must be filled in.');
+      }
+
+      if (!customerContact.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Contact must be filled in.');
+      }
+
       if (!paymentStatus.trim()) {
         isValid = false;
         req.flash('error', 'Payment Status must be filled in.');
+      }
+
+      if (!paymentType.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Type must be filled in.');
       }
 
       if (!paymentAmount.trim()) {
@@ -47,9 +72,12 @@ const createLogisticsOrder = async (req, res) => {
 
       if (isValid) {
         const logisticsOrder = new LogisticsOrder({
-          createdByUser: req.user._id, // Replace with the actual user ID
+          createdByUser: req.user._id,
           status: 'Draft Order',
           description: description,
+          customerType: customerType,
+          customerName: customerName,
+          customerContact: customerContact,
           address: {
             address1: emptyAddress,
             address2: '-',
@@ -58,8 +86,10 @@ const createLogisticsOrder = async (req, res) => {
             country: '-'
           },
           paymentStatus: paymentStatus,
+          paymentType: paymentType,
           paymentAmount: paymentAmount,
-          deliveryType: deliveryType
+          deliveryType: deliveryType,
+          remark
         });
 
         await logisticsOrder.save();
@@ -71,6 +101,21 @@ const createLogisticsOrder = async (req, res) => {
     } else {
       // If the user does not choose "Allow empty address"
       let isValid = true;
+
+      if (!customerType.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Type must be filled in.');
+      }
+
+      if (!customerName.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Name must be filled in.');
+      }
+
+      if (!customerContact.trim()) {
+        isValid = false;
+        req.flash('error', 'Customer Contact must be filled in.');
+      }
 
       if (!address1.trim()) {
         isValid = false;
@@ -97,6 +142,11 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Payment Status must be filled in.');
       }
 
+      if (!paymentType.trim()) {
+        isValid = false;
+        req.flash('error', 'Payment Type must be filled in.');
+      }
+
       if (!paymentAmount.trim()) {
         isValid = false;
         req.flash('error', 'Payment Amount must be filled in.');
@@ -112,7 +162,10 @@ const createLogisticsOrder = async (req, res) => {
         const logisticsOrder = new LogisticsOrder({
           createdByUser: req.user._id, // Replace with the actual user ID
           status: 'Draft Order',
-          description: description,
+          description,
+          customerType,
+          customerName,
+          customerContact,
           address: {
             address1,
             address2,
@@ -120,9 +173,11 @@ const createLogisticsOrder = async (req, res) => {
             postalCode,
             country
           },
-          paymentStatus: paymentStatus,
-          paymentAmount: paymentAmount,
-          deliveryType: deliveryType
+          paymentStatus,
+          paymentType,
+          paymentAmount,
+          deliveryType,
+          remark
         });
 
         await logisticsOrder.save();
@@ -137,11 +192,16 @@ const createLogisticsOrder = async (req, res) => {
 
   return res.render('admin/createLogisticsOrder', {
     description,
+    customerType,
+    customerName,
+    customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
     paymentStatus,
+    paymentType,
     paymentAmount,
-    deliveryType
+    deliveryType,
+    remark
   });
 };
 
@@ -193,13 +253,18 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
         case 'status':
         case 'description':
+        case 'customerType':
+        case 'customerName':
+        case 'customerContact':
         case 'address.address1':
         case 'address.address2':
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
         case 'paymentStatus':
+        case 'paymentType':
         case 'deliveryType':
+        case 'remark':
           query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
@@ -293,13 +358,18 @@ const logisticsOrderListPage = async (req, res) => {
 
         case 'status':
         case 'description':
+        case 'customerType':
+        case 'customerName':
+        case 'customerContact':
         case 'address.address1':
         case 'address.address2':
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
         case 'paymentStatus':
+        case 'paymentType':
         case 'deliveryType':
+        case 'remark':
           query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
@@ -342,7 +412,14 @@ const logisticsOrderListPage = async (req, res) => {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
     }
 
-    res.render('admin/logisticsOrderList', { logisticsOrders, pagination, searchQuery, searchField });
+    res.render('admin/logisticsOrderList', {
+      logisticsOrders,
+      pagination,
+      searchQuery,
+      searchField,
+      page,
+      perPage,
+    });
 
   } catch (error) {
     console.error(error);
@@ -414,10 +491,15 @@ const editLogisticsOrder = async (req, res) => {
   const {
     status,
     description,
+    customerType,
+    customerName,
+    customerContact,
     address1, address2, city, postalCode, country,
     paymentStatus,
+    paymentType,
     paymentAmount,
-    deliveryType
+    deliveryType,
+    remark
   } = req.body;
 
   try {
@@ -514,10 +596,15 @@ const editLogisticsOrder = async (req, res) => {
           {
             status,
             description,
+            customerType,
+            customerName,
+            customerContact,
             address1, address2, city, postalCode, country,
             paymentStatus,
+            paymentType,
             paymentAmount,
-            deliveryType
+            deliveryType,
+            remark
           }
         );
 
@@ -534,6 +621,9 @@ const editLogisticsOrder = async (req, res) => {
             addToDeliveryListId,
             status,
             description,
+            customerType,
+            customerName,
+            customerContact,
             address: {
               address1,
               address2,
@@ -542,8 +632,10 @@ const editLogisticsOrder = async (req, res) => {
               country
             },
             paymentStatus,
+            paymentType,
             paymentAmount,
-            deliveryType
+            deliveryType,
+            remark
           }
         })
       }
@@ -556,6 +648,9 @@ const editLogisticsOrder = async (req, res) => {
           addToDeliveryListId,
           status,
           description,
+          customerType,
+          customerName,
+          customerContact,
           address: {
             address1,
             address2,
@@ -564,8 +659,10 @@ const editLogisticsOrder = async (req, res) => {
             country
           },
           paymentStatus,
+          paymentType,
           paymentAmount,
-          deliveryType
+          deliveryType,
+          remark
         }
       })
     };
@@ -673,13 +770,18 @@ const logisticsOrderFeedPage = async (req, res) => {
         // Your existing cases for different search fields
         case 'status':
         case 'description':
+        case 'customerType':
+        case 'customerName':
+        case 'customerContact':
         case 'address.address1':
         case 'address.address2':
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
         case 'paymentStatus':
+        case 'paymentType':
         case 'deliveryType':
+        case 'remark':
           query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
 
@@ -969,7 +1071,7 @@ const deliveryListPage = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description address paymentStatus paymentAmount deliveryType'
+        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1032,7 +1134,7 @@ const deliveryDetailsPage = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description address paymentStatus paymentAmount deliveryType'
+        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1137,7 +1239,7 @@ const startDeliver = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description address paymentStatus paymentAmount deliveryType'
+        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1195,7 +1297,7 @@ const startDeliverListPage = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description address paymentStatus paymentAmount deliveryType'
+        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1259,7 +1361,7 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description address paymentStatus paymentAmount deliveryType'
+        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
