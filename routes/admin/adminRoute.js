@@ -21,6 +21,9 @@ route.post('/userList/edit/:userId', authenticationMiddleware.ensureAuthenticate
 // route.get('/userList/delete/:userId', authenticationMiddleware.ensureAuthenticated, adminController.deleteUser); // Remove this from "userListPage" when is done.
 route.post('/userList/edit/delete/:userId', authenticationMiddleware.ensureAuthenticated, adminController.deleteEditUser);
 
+// usersLogEntriesList.ejs
+route.get('/usersLogEntriesList', authenticationMiddleware.ensureAuthenticated, adminController.usersLogEntriesListPage);
+
 // createLogisticsOrder.ejs
 route.get('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrderPage);
 route.post('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrder);

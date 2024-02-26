@@ -5,12 +5,12 @@ const mongoose = require('mongoose');
 const paginate = require('express-paginate');
 
 const dashboardPage = (req, res) => {
-    res.render('customerService/dashboard');
+    res.render('runner/dashboard');
 }
 
 const profilePage = (req, res) => {
     const user = req.user;
-    res.render('customerService/profile', { user });
+    res.render('runner/profile', { user });
 }
 
 const updateProfile = async (req, res) => {
@@ -78,7 +78,7 @@ const updateProfile = async (req, res) => {
 
                 } catch (error) {
                     console.log(error);
-                    return res.redirect('/customerService/profile');
+                    return res.redirect('/runner/profile');
                 }
             }
 
@@ -108,7 +108,7 @@ const updateProfile = async (req, res) => {
         } else {
 
             // Render the edit form with the input values if there's an issue
-            return res.render('customerService/profile', {
+            return res.render('runner/profile', {
                 user: {
                     _id: user._id,
                     username: user.username,
@@ -126,7 +126,7 @@ const updateProfile = async (req, res) => {
     }
 
     // req.flash('success', 'Profile updated successfully!');
-    return res.redirect('/customerService/profile');
+    return res.redirect('/runner/profile');
 };
 
 const logout = (req, res) => {

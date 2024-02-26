@@ -13,9 +13,11 @@ const sessionMiddleware = require('./middlewares/sessionMeddleware');
 const authenticationMiddleware = require('./middlewares/authenticationMiddleware');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const cacheControlMiddleware = require('./middlewares/cacheControlMiddleware');
+const logEntriesMiddleware = require('./middlewares/logEntriesMiddleware');
 
 const adminRoute = require('./routes/admin/adminRoute');
 const customerServiceRoute = require('./routes/customerService/customerServiceRoute');
+const runnerRoute = require('./routes/runner/runnerRoute');
 const loginRoute = require('./routes/loginRoute');
 
 connectDb();
@@ -44,10 +46,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Log Entries Middleware
+app.use(logEntriesMiddleware.logEntries);
+
 app.use('/', loginRoute);
 // app.use('/admin', adminRoute);
 app.use('/admin', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isAdmin, adminRoute);
-app.use('/userB', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isCustomerService, customerServiceRoute);
+app.use('/customerService', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isCustomerService, customerServiceRoute);
+app.use('/runner', authenticationMiddleware.ensureAuthenticated, authenticationMiddleware.isRunner, runnerRoute);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -70,6 +76,11 @@ app.use(function (err, req, res, next) {
 // For debbuging (1/2) end.
 
 module.exports = app;
+
+
+// Stop at debugging `usersLogEntriesListPage()` the "updateData" switch case, it cant search the value inside a obj from a data.
+// Stop at modifying the `logEntries()` to record the user log.
+// Stop at adding the status code in every function.
 
 // Stop at debugging "updateProfile()" function.
 // Stop at create "updateProfile()" function.

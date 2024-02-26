@@ -3,7 +3,8 @@ const passport = require('passport');
 const validator = require('validator');
 const mongoose = require('mongoose');
 const paginate = require('express-paginate');
-const bcrypt = require('bcrypt');
+const LogEntries = require('../../models/logEntriesModel');
+// const bcrypt = require('bcrypt');
 
 const dashboardPage = (req, res) => {
   res.render('admin/dashboard');
@@ -615,6 +616,121 @@ const deleteEditUser = async (req, res) => {
   }
 }
 
+const usersLogEntriesListPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 10; // Adjust this value based on your preference
+    const skip = (page - 1) * perPage;
+
+    let query = {};
+    const searchQuery = req.query.search;
+    const searchField = req.query.searchField;
+
+    if (searchQuery && searchField) {
+      switch (searchField) {
+        case '_id':
+        case 'user':
+          // Check if the entered value is a valid ObjectId
+          if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) };
+          } else {
+            req.flash('warning', `Invalid ObjectId format for ${searchQuery}.`);
+            return res.status(200).redirect('/admin/usersLogEntriesList');
+          }
+          break;
+
+        case 'method':
+        case 'url':
+        case 'action':
+          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          break;
+
+        // case 'updatedData':
+        //   query = {
+        //     ...query,
+        //     $or: [
+        //       { [`updatedData.${searchQuery}`]: { $exists: true } }
+        //     ]
+        //   };
+        //   break;
+
+        case 'updatedData':
+          query = {
+            ...query,
+            $or: [
+              { [`updatedData.${searchQuery}`]: { $exists: true } }, // Check if field exists
+              { 'updatedData': { $elemMatch: { [searchQuery]: { $exists: true } } } }, // Check if value exists
+              { 'updatedData': { $elemMatch: { $eq: searchQuery } } } // Check if value exists in any field
+            ]
+          };
+          break;
+
+
+        case 'createdAt':
+        case 'updatedAt':
+          const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
+          const startDate = new Date(searchQuery);
+
+          if (isNaN(startDate.getTime())) {
+            req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
+            return res.status(200).redirect('/admin/usersLogEntriesList');
+          }
+
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+
+          query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
+          break;
+
+        default:
+          req.flash('warning', 'Invalid search field.');
+          query = {}; // Set a default value for query
+          return res.status(200).redirect('/admin/usersLogEntriesList');
+          break;
+      }
+    }
+
+    const targetLogEntriesList = await LogEntries
+      .find(query)
+      .populate('user', 'username')
+      .sort({ createdAt: -1 }) // Sort by newest first.
+      .skip(skip)
+      .limit(perPage);
+
+    const totalTargetLogEntriesList = await LogEntries.countDocuments(query);
+
+    const totalPages = Math.ceil(totalTargetLogEntriesList / perPage);
+
+    const pagination = {
+      prev: page > 1 ? `/admin/usersLogEntriesList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      next: page < totalPages ? `/admin/usersLogEntriesList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      current: page,
+      totalPages: totalPages,
+    };
+
+    if (targetLogEntriesList.length === 0 && searchQuery) {
+      req.flash('warning', `No data found based on the input "${searchQuery}" for the field "${searchField}".`);
+    } else if (targetLogEntriesList.length === 0) {
+      req.flash('warning', `No data found`);
+    }
+
+    // console.log(thisUserValidDeliveryList);
+    return res.status(200).render('admin/usersLogEntriesList', {
+      targetLogEntriesList,
+      searchQuery,
+      searchField,
+      pagination,
+      page,
+      perPage,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send('Internal Server Error');
+  }
+
+}
+
 const logout = (req, res) => {
   req.logout(function (err) {
     if (err) { return next(err); }
@@ -628,12 +744,12 @@ module.exports = {
   updateProfile,
   createUserPage,
   createUser,
-
   userListPage,
   editUserPage,
   editUser,
   deleteUser,
   deleteEditUser,
+  usersLogEntriesListPage,
 
   logout,
 }

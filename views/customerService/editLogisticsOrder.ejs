@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%- include('./partials/header'); %>
+
+  <!-- <script src="../../public/javascripts/customerService/editLogisticsOrder.js"></script> -->
+  <title>Edit Logistics Order</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <div class="container mt-5">
+
+    <div class="border rounded p-5">
+
+      <h1 class="mb-4">Edit Logistics Order</h1>
+
+      <form id="editLogisticsOrderForm" method="post" action="/customerService/logisticsOrderList/edit/<%= logisticsOrder._id %>">
+
+        <div class="mb-3">
+          <label for="logisticsOrderId" class="form-label">Logistics Order ID(Can't edit):</label>
+          <input type="text" class="form-control" id="logisticsOrderId" name="logisticsOrderId" value="<%= logisticsOrder._id %>" readonly>
+        </div>
+        
+        <div class="mb-3">
+          <label for="createdByUser" class="form-label">Created By User:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="createdByUser" name="createdByUser" placeholder="<%= createdByUserDetails._id %> ( <%= createdByUserDetails.username %> )">
+            <!-- <button class="btn btn-outline-secondary copyButton" id="copyCreatedByUser" data-clipboard-target="#createdByUser">Copy User ID</button> -->
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="addToDeliveryListId" class="form-label">Added to the delivery list by User:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="addToDeliveryListId" name="addToDeliveryListId" placeholder="<%= deliveryUserDetails._id %> ( <%= deliveryUserDetails.username %> )">
+            <!-- <button class="btn btn-outline-secondary copyButton" id="copyAddToDeliveryListId" data-clipboard-target="#addToDeliveryListId">Copy User ID</button> -->
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <!-- <label for="status" class="form-label">Status:</label>
+          <input type="text" class="form-control" id="status" name="status" value="<%= logisticsOrder.status %>" required> -->
+
+          <label for="status" class="form-label">Status:</label>
+          <select id="status" name="status" class="form-select">
+              <option value="Draft Order" <%= logisticsOrder.status === 'Draft Order' ? 'selected' : '' %>>Draft Order</option>
+              <option value="Order Posted to Feed" <%= logisticsOrder.status === 'Order Posted to Feed' ? 'selected' : '' %>>Order Posted to Feed</option>
+              <option value="Added to Delivery List" <%= logisticsOrder.status === 'Added to Delivery List' ? 'selected' : '' %>>Added to Delivery List</option>
+              <option value="Delivery in Progress" <%= logisticsOrder.status === 'Delivery in Progress' ? 'selected' : '' %>>Delivery in Progress</option>
+              <option value="Delivered Successfully" <%= logisticsOrder.status === 'Delivered Successfully' ? 'selected' : '' %>>Delivered Successfully</option>
+              <option value="Returning" <%= logisticsOrder.status === 'Returning' ? 'selected' : '' %>>Returning</option>
+              <option value="Returned" <%= logisticsOrder.status === 'Returned' ? 'selected' : '' %>>Returned</option>
+              <option value="Delivery Attempted" <%= logisticsOrder.status === 'Delivery Attempted' ? 'selected' : '' %>>Delivery Attempted</option>
+              <option value="Cancel Delivery" <%= logisticsOrder.status === 'Cancel Delivery' ? 'selected' : '' %>>Cancel Delivery</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="description" class="form-label">Description:</label>
+          <textarea class="form-control" id="description" name="description"><%= logisticsOrder.description %></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="customerType" class="form-label">Customer Type:</label>
+          <select id="customerType" name="customerType" class="form-select">
+              <option value="New customer" <%= logisticsOrder.customerType === 'New customer' ? 'selected' : '' %>>New customer</option>
+              <option value="Repeat Order" <%= logisticsOrder.customerType === 'Repeat Order' ? 'selected' : '' %>>Repeat Order</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="customerName" class="form-label">Customer Name:</label>
+          <input class="form-control" id="customerName" name="customerName" value="<%= logisticsOrder.customerName %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="customerContact" class="form-label">Customer Contact:</label>
+          <input class="form-control" id="customerContact" name="customerContact" value="<%= logisticsOrder.customerContact %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="address1" class="form-label">Address 1:</label>
+          <input type="text" class="form-control" id="address1" name="address.address1" value="<%= logisticsOrder.address.address1 %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="address2" class="form-label">Address 2:</label>
+          <input type="text" class="form-control" id="address2" name="address.address2" value="<%= logisticsOrder.address.address2 %>">
+        </div>
+
+        <div class="mb-3">
+          <label for="city" class="form-label">City:</label>
+          <input type="text" class="form-control" id="city" name="address.city" value="<%= logisticsOrder.address.city %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="postalCode" class="form-label">Postal Code:</label>
+          <input type="text" class="form-control" id="postalCode" name="address.postalCode" value="<%= logisticsOrder.address.postalCode %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="country" class="form-label">Country:</label>
+          <input type="text" class="form-control" id="country" name="address.country" value="<%= logisticsOrder.address.country %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="paymentStatus" class="form-label">Payment Status:</label>
+          <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" value="<%= logisticsOrder.paymentStatus %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="paymentType" class="form-label">Payment Type:</label>
+          <input type="text" class="form-control" id="paymentType" name="paymentType" value="<%= logisticsOrder.paymentType %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="paymentAmount" class="form-label">Payment Amount:</label>
+          <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
+      </div>
+
+        <div class="mb-3">
+          <label for="deliveryType" class="form-label">Delivery Type:</label>
+          <input type="text" class="form-control" id="deliveryType" name="deliveryType" value="<%= logisticsOrder.deliveryType %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="remark" class="form-label">Remark:</label>
+          <textarea class="form-control" id="remark" name="remark"><%= logisticsOrder.remark %></textarea>
+        </div>
+
+        <div class="row p-3">
+          <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+        </div>
+        
+      </form>
+
+      <div class="row p-3">
+        <div class="col-md-6 mb-2">
+          <a href="javascript:history.back()" class="w-100">
+            <button class="btn btn-secondary w-100">Back</button>
+          </a>
+        </div>
+
+        <form class="col-md-6 mb-2" method="post" action="/customerService/logisticsOrderList/edit/delete/<%= logisticsOrder._id %>"
+          onsubmit="return confirm('Are you sure you want to delete this logistics order?');">
+          <a href="#" class="w-100">
+            <button class="btn btn-danger w-100" type="submit">Delete Logistics Order</button>
+          </a>
+        </form>
+    </div>   
+
+    </div>
+
+  </div>
+    
+  <footer>
+    <%- include('./partials/footer'); %>
+  </footer>
+
+</body>
+
+</html>

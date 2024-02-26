@@ -46,6 +46,6 @@ const logisticsOrderSchema = new mongoose.Schema({
 });
 
 
-const LogisticsOrderModel = mongoose.model('LogisticsOrder', logisticsOrderSchema);
+const LogisticsOrder = mongoose.model('LogisticsOrder', logisticsOrderSchema);
 
-module.exports = LogisticsOrderModel;
+module.exports = LogisticsOrder;

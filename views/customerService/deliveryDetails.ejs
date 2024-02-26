@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%- include('./partials/header'); %>
+  <title>Logistics Orders Details</title>
+</head>
+
+<body>
+  <header>
+    <%- include('./partials/navbar'); %>
+  </header>
+
+  <%- include('./partials/flashMessage'); %>
+
+  <div class="container mt-5">
+    <h1 class="mb-4">Logistics Orders Details</h1>
+
+    <div class="card">
+        <div class="card-header">
+            <p class="card-text m-2 h4">Order ID: <br><strong><%= delivery.logisticsOrder_id._id %></strong></p>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><strong>Created by:</strong><br><%= delivery.user_id.username %></p>
+            <p class="card-text"><strong>Status: </strong><br><%= delivery.logisticsOrder_id.status %>(You)</p>
+            <p class="card-text"><strong>Description: </strong><br><%= delivery.logisticsOrder_id.description %></p>
+            <p class="card-text"><strong>Customer Type: </strong><br><%= delivery.logisticsOrder_id.customerType %></p>
+            <p class="card-text"><strong>Customer Name: </strong><br><%= delivery.logisticsOrder_id.customerName %></p>
+            <p class="card-text"><strong>Customer Contact: </strong><br><%= delivery.logisticsOrder_id.customerContact %></p>
+            <p class="card-text">
+                <strong>Address:</strong><br>
+                <%= delivery.logisticsOrder_id.address.address1 %><br>
+                <%= delivery.logisticsOrder_id.address.address2 %><br>
+                <%= delivery.logisticsOrder_id.address.city %><br>
+                <%= delivery.logisticsOrder_id.address.postalCode %><br>
+                <%= delivery.logisticsOrder_id.address.country %>
+            </p>
+            <p class="card-text"><strong>Payment Status: </strong><br><%= delivery.logisticsOrder_id.paymentStatus %></p>
+            <p class="card-text"><strong>Payment Type: </strong><br><%= delivery.logisticsOrder_id.paymentType %></p>
+            <p class="card-text"><strong>Payment Amount: </strong><br><%= delivery.logisticsOrder_id.paymentAmount %></p>
+            <p class="card-text"><strong>Delivery Type: </strong><br><%= delivery.logisticsOrder_id.deliveryType %></p>
+            <p class="card-text"><strong>Remark: </strong><br><%= delivery.logisticsOrder_id.remark %></p>
+    
+            <hr>
+            <div class="row">
+              <form action="/customerService/deliveryList/deliveryDetails/removeFromDeliveryList/<%= delivery._id %>" method="post" class="col-md-6 mb-2">
+                  <a href="#" class="btn btn-danger w-100">
+                      <button class="btn btn-danger w-100" type="submit">Remove from Delivery list</button>
+                  </a>
+              </form>
+      
+              <div class="col-md-6 mb-2">
+                  <a href="/customerService/deliveryList" class="btn btn-secondary w-100">
+                      <button class="btn btn-secondary w-100">Back</button>
+                  </a>
+              </div>
+          </div>
+            
+        </div>
+    </div>
+    
+
+  </div>
+
+  <footer>
+    <%- include('./partials/footer'); %>
+  </footer>
+</body>
+</html>

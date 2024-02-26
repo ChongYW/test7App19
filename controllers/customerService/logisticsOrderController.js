@@ -6,7 +6,7 @@ const paginate = require('express-paginate');
 const mongoose = require('mongoose');
 
 const createLogisticsOrderPage = (req, res) => {
-  res.status(200).render('admin/createLogisticsOrder');
+  res.render('customerService/createLogisticsOrder');
 };
 
 const createLogisticsOrder = async (req, res) => {
@@ -94,7 +94,7 @@ const createLogisticsOrder = async (req, res) => {
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder');
+        return res.render('customerService/createLogisticsOrder');
       }
     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
@@ -182,7 +182,7 @@ const createLogisticsOrder = async (req, res) => {
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder');
+        return res.render('customerService/createLogisticsOrder');
       }
     }
   } catch (error) {
@@ -190,7 +190,7 @@ const createLogisticsOrder = async (req, res) => {
     req.flash('error', error.message);
   }
 
-  return res.status(422).render('admin/createLogisticsOrder', {
+  return res.render('customerService/createLogisticsOrder', {
     description,
     customerType,
     customerName,
@@ -212,7 +212,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
     const perPage = 10; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    const redirectURL = '/admin/logisticsOrderPendingList';
+    const redirectURL = '/customerService/logisticsOrderPendingList';
 
     // When page reload:
     let searchStatusField = 'Cancel Delivery';
@@ -221,6 +221,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
     }
 
     let query = {
+      createdByUser: req.user._id,
       status: searchStatusField,
     };
     const searchQuery = req.query.search;
@@ -234,20 +235,20 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.status(422).render('admin/logisticsOrderPendingList');
+            return res.redirect('/customerService/logisticsOrderPendingList');
           }
 
-          query = { paymentAmount: paymentAmount };
+          query = { ...query, paymentAmount: paymentAmount };
           break;
 
         case '_id':
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
+            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.status(200).redirect('/admin/logisticsOrderPendingList');
+            return res.redirect('/customerService/logisticsOrderPendingList');
           }
           break;
 
@@ -265,7 +266,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
         case 'paymentType':
         case 'deliveryType':
         case 'remark':
-          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
         case 'updatedAt':
@@ -274,7 +275,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.status(200).redirect('/admin/logisticsOrderPendingList');
+            return res.redirect('/customerService/logisticsOrderPendingList');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -285,7 +286,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
           break;
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.status(200).redirect('/admin/logisticsOrderPendingList');
+          return res.redirect('/customerService/logisticsOrderPendingList');
       }
     }
 
@@ -294,8 +295,8 @@ const logisticsOrderPendingListPage = async (req, res) => {
     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
 
     const pagination = {
-      prev: page > 1 ? `/admin/logisticsOrderPendingList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-      next: page < totalPages ? `/admin/logisticsOrderPendingList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      prev: page > 1 ? `/customerService/logisticsOrderPendingList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      next: page < totalPages ? `/customerService/logisticsOrderPendingList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
       current: page,
       totalPages: totalPages,
     };
@@ -304,7 +305,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
     }
 
-    return res.status(200).render('admin/logisticsOrderPendingList', {
+    res.render('customerService/logisticsOrderPendingList', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -327,7 +328,9 @@ const logisticsOrderListPage = async (req, res) => {
     const perPage = 10; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let query = {};
+    let query = {
+      createdByUser: req.user._id,
+    };
     const searchQuery = req.query.search;
     const searchField = req.query.searchField;
 
@@ -339,20 +342,20 @@ const logisticsOrderListPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.status(200).redirect('/admin/logisticsOrderList');
+            return res.redirect('/customerService/logisticsOrderList');
           }
 
-          query = { paymentAmount: paymentAmount };
+          query = { ...query, paymentAmount: paymentAmount };
           break;
 
         case '_id':
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
+            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.status(200).redirect('/admin/logisticsOrderList');
+            return res.redirect('/customerService/logisticsOrderList');
           }
           break;
 
@@ -370,7 +373,7 @@ const logisticsOrderListPage = async (req, res) => {
         case 'paymentType':
         case 'deliveryType':
         case 'remark':
-          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
         case 'updatedAt':
@@ -379,7 +382,7 @@ const logisticsOrderListPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.status(200).redirect('/admin/logisticsOrderList');
+            return res.redirect('/customerService/logisticsOrderList');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -390,12 +393,11 @@ const logisticsOrderListPage = async (req, res) => {
           break;
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.status(200).redirect('/admin/logisticsOrderList');
+          return res.redirect('/customerService/logisticsOrderList');
       }
     }
 
-    const logisticsOrders = await LogisticsOrder
-      .find(query)
+    const logisticsOrders = await LogisticsOrder.find(query)
       .sort({ createdAt: -1 })  // Sort by createdAt in descending order (newest first)
       .skip(skip)
       .limit(perPage);
@@ -403,8 +405,8 @@ const logisticsOrderListPage = async (req, res) => {
     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
 
     const pagination = {
-      prev: page > 1 ? `/admin/logisticsOrderList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-      next: page < totalPages ? `/admin/logisticsOrderList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      prev: page > 1 ? `/customerService/logisticsOrderList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
+      next: page < totalPages ? `/customerService/logisticsOrderList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
       current: page,
       totalPages: totalPages,
     };
@@ -413,7 +415,7 @@ const logisticsOrderListPage = async (req, res) => {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
     }
 
-    return res.status(200).render('admin/logisticsOrderList', {
+    res.render('customerService/logisticsOrderList', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -430,17 +432,22 @@ const logisticsOrderListPage = async (req, res) => {
 
 const editLogisticsOrderPage = async (req, res) => {
   try {
-    // const redirectURL = '/admin/logisticsOrderList';
+    // const redirectURL = '/customerService/logisticsOrderList';
     // let addToDeliveryListUser;
     let createdByUserDetails;
     let deliveryUserDetails;
     const logisticsOrderId = req.params.logisticsOrderId;
-    const logisticsOrder = await LogisticsOrder.findById(logisticsOrderId).populate('createdByUser');
+    const logisticsOrder = await LogisticsOrder
+      .findById(logisticsOrderId)
+      .where({
+        createdByUser: req.user._id,
+      })
+      .populate('createdByUser');
 
     if (!logisticsOrder) {
 
       req.flash('error', 'Logistics Order not found!');
-      return res.status(422).redirect('/admin/logisticsOrderList');
+      return res.redirect('/customerService/logisticsOrderList');
 
     }
 
@@ -471,7 +478,7 @@ const editLogisticsOrderPage = async (req, res) => {
 
     // console.log(deliveryUserDetails._id);
     // console.log(deliveryUserDetails.username);
-    res.status(200).render('admin/editLogisticsOrder', {
+    res.render('customerService/editLogisticsOrder', {
       logisticsOrder,
       createdByUserDetails,
       deliveryUserDetails,
@@ -510,7 +517,7 @@ const editLogisticsOrder = async (req, res) => {
       console.log('LogisticsOrder not found');
       // Handle the case where LogisticsOrder is not found, e.g., return an error response
       req.flash('error', 'Logistics Order is not found, please try agian...');
-      return res.status(422).redirect('/admin/logisticsOrderList');
+      return res.redirect('/customerService/logisticsOrderList');
     }
 
     if (createdByUser && mongoose.Types.ObjectId.isValid(createdByUser) && createdByUser.trim()) {
@@ -610,40 +617,39 @@ const editLogisticsOrder = async (req, res) => {
         );
 
         req.flash('success', 'Logistics order updated successfully!');
-        return res.status(201).redirect('/admin/logisticsOrderList');
+        return res.redirect('/customerService/logisticsOrderList');
 
       } catch (error) {
         console.error(error);
-        res.status(500).send('Internal Server Error');
-        // req.flash('error', 'Error saving logistics order.');
-        // return res.status(422).render('admin/editLogisticsOrder', {
-        //   logisticsOrder: {
-        //     _id: logisticsOrder,
-        //     createdByUser,
-        //     addToDeliveryListId,
-        //     status,
-        //     description,
-        //     customerType,
-        //     customerName,
-        //     customerContact,
-        //     address: {
-        //       address1,
-        //       address2,
-        //       city,
-        //       postalCode,
-        //       country
-        //     },
-        //     paymentStatus,
-        //     paymentType,
-        //     paymentAmount,
-        //     deliveryType,
-        //     remark
-        //   }
-        // })
+        req.flash('error', 'Error saving logistics order.');
+        return res.render('customerService/editLogisticsOrder', {
+          logisticsOrder: {
+            _id: logisticsOrder,
+            createdByUser,
+            addToDeliveryListId,
+            status,
+            description,
+            customerType,
+            customerName,
+            customerContact,
+            address: {
+              address1,
+              address2,
+              city,
+              postalCode,
+              country
+            },
+            paymentStatus,
+            paymentType,
+            paymentAmount,
+            deliveryType,
+            remark
+          }
+        })
       }
     } else {
       // Render the edit form with the input values if there's an issue
-      return res.status(422).render('admin/editLogisticsOrder', {
+      return res.render('customerService/editLogisticsOrder', {
         logisticsOrder: {
           _id: logisticsOrder,
           createdByUser,
@@ -670,25 +676,11 @@ const editLogisticsOrder = async (req, res) => {
     };
 
     // Send a success response
-    // res.redirect('/admin/logisticsOrderList');
+    // res.redirect('/customerService/logisticsOrderList');
   } catch (error) {
     console.error('Error updating LogisticsOrder:', error);
     // Handle the error and send an appropriate response
     res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-const deleteEditLogisticsOrder = async (req, res) => {
-  try {
-    const orderId = req.params.logisticsOrderId;
-    // Remove user from the database
-    await LogisticsOrder.findByIdAndDelete(orderId);
-
-    req.flash('success', 'Logistics Order delete successfully!')
-    res.status(201).redirect('/admin/logisticsOrderList');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
   }
 };
 
@@ -734,7 +726,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.status(200).redirect('/admin/logisticsOrderList');
+            return res.redirect('/customerService/logisticsOrderList');
           }
 
           query = { ...query, paymentAmount: paymentAmount };
@@ -746,7 +738,7 @@ const logisticsOrderFeedPage = async (req, res) => {
             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.status(200).redirect('/admin/logisticsOrderFeed');
+            return res.redirect('/customerService/logisticsOrderFeed');
           }
           break;
 
@@ -762,7 +754,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
             if (userIds.length === 0) {
               req.flash('warning', `No user found with the username "${searchQuery}".`);
-              return res.status(200).redirect('/admin/logisticsOrderFeed');
+              return res.redirect('/customerService/logisticsOrderFeed');
             }
 
             query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
@@ -794,7 +786,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.status(200).redirect('/admin/logisticsOrderFeed');
+            return res.redirect('/customerService/logisticsOrderFeed');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -810,7 +802,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.status(200).redirect('/admin/logisticsOrderFeed');
+          return res.redirect('/customerService/logisticsOrderFeed');
       }
     }
 
@@ -824,8 +816,8 @@ const logisticsOrderFeedPage = async (req, res) => {
     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
 
     const pagination = {
-      prev: page > 1 ? `/admin/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
-      next: page < totalPages ? `/admin/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+      prev: page > 1 ? `/customerService/logisticsOrderFeed?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
+      next: page < totalPages ? `/customerService/logisticsOrderFeed?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
       current: page,
       totalPages: totalPages,
     };
@@ -834,7 +826,7 @@ const logisticsOrderFeedPage = async (req, res) => {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
     }
 
-    res.status(200).render('admin/logisticsOrderFeed', {
+    res.render('customerService/logisticsOrderFeed', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -857,11 +849,11 @@ const logisticsOrderDetailsPage = async (req, res) => {
       .populate('createdByUser', 'username');
 
     if (logisticsOrder) {
-      return res.status(200).render('admin/logisticsOrderDetails', { logisticsOrder })
+      return res.render('customerService/logisticsOrderDetails', { logisticsOrder })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return res.status(422).redirect('/admin/logisticsOrderFeed');
+    return res.redirect('/customerService/logisticsOrderFeed');
 
   } catch (error) {
     console.error(error);
@@ -897,169 +889,14 @@ const addToDeliveryList = async (req, res) => {
       req.flash('error', 'The logistics order is not found, try another.');
     }
 
-    res.status(201).redirect('/admin/logisticsOrderFeed');
+    res.redirect('/customerService/logisticsOrderFeed');
 
   } catch (error) {
-    // req.flash('error', error)
+    req.flash('error', error)
     console.error(error);
-    // res.status(500).render('somethingWrong');
-    res.status(500).send('Internal Server Error');
+    res.status(500).render('somethingWrong');
   }
 };
-
-// const deliveryListPage = async (req, res) => {
-//   try {
-//     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id');
-
-//     if (!thisUserDeliveryList.length) {
-//       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
-//       return res.redirect('/admin/deliveryList');
-//     }
-
-//     const page = parseInt(req.query.page) || 1;
-//     const perPage = 9; // Adjust this value based on your preference
-//     const skip = (page - 1) * perPage;
-
-//     // Initialize variables with default values
-//     let searchQuery = '';
-//     let searchField = '_id';
-//     const searchStatusField = 'Added to Delivery List';
-
-//     if (req.query.search) {
-//       searchQuery = req.query.search;
-//     }
-
-//     if (req.query.searchField) {
-//       searchField = req.query.searchField;
-//     }
-
-//     let query = {
-//       _id: thisUserDeliveryList.logisticsOrder_id,
-//       status: searchStatusField,
-//     };
-
-//     if (thisUserDeliveryList.length > 0) {
-//       // Assuming you want to filter based on the first logisticsOrder_id in the array
-//       query._id = thisUserDeliveryList[0].logisticsOrder_id;
-//     }
-
-//     // Need to adjust the search range to userB and userC.
-//     if (searchQuery && searchField) {
-//       switch (searchField) {
-//         case 'paymentAmount':
-//           // Check if the entered value is a valid number
-//           const paymentAmount = parseFloat(searchQuery);
-
-//           if (isNaN(paymentAmount)) {
-//             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-//             return res.redirect('/admin/deliveryList');
-//           }
-
-//           query = { ...query, paymentAmount: paymentAmount };
-//           break;
-
-//         case '_id':
-//           // Check if the entered value is a valid ObjectId
-//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
-//           } else {
-//             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-//             return res.redirect('/admin/deliveryList');
-//           }
-//           break;
-
-//         case 'createdByUser':
-//           // Check if the entered value is a valid ObjectId
-//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
-//           } else {
-//             // If not a valid ObjectId, assume it's a user name
-//             const userQuery = { username: new RegExp(searchQuery, 'i') };
-//             const users = await User.find(userQuery, '_id');
-//             const userIds = users.map(user => user._id);
-
-//             if (userIds.length === 0) {
-//               req.flash('warning', `No user found with the username "${searchQuery}".`);
-//               return res.redirect('/admin/deliveryList');
-//             }
-
-//             query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
-//           }
-//           break;
-
-//         // Your existing cases for different search fields
-//         case 'status':
-//         case 'description':
-//         case 'address.address1':
-//         case 'address.address2':
-//         case 'address.city':
-//         case 'address.postalCode':
-//         case 'address.country':
-//         case 'paymentStatus':
-//         case 'deliveryType':
-//           query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
-//           break;
-
-//         case 'createdAt':
-//         case 'updatedAt':
-//           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
-//           const startDate = new Date(searchQuery);
-
-//           if (isNaN(startDate.getTime())) {
-//             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-//             return res.redirect('/admin/deliveryList');
-//           }
-
-//           startDate.setHours(0, 0, 0, 0);
-//           const endDate = new Date(startDate);
-//           endDate.setHours(23, 59, 59, 999);
-
-//           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
-//           break;
-
-//         // Other cases for different search fields
-
-//         default:
-//           req.flash('warning', 'Invalid search field.');
-//           return res.redirect('/admin/deliveryList');
-//       }
-//     }
-
-//     const logisticsOrders = await LogisticsOrder.find(query)
-//       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
-//       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
-//       .skip(skip)
-//       .limit(perPage);
-
-//     const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
-//     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
-
-//     const pagination = {
-//       prev: page > 1 ? `/admin/deliveryList?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
-//       next: page < totalPages ? `/admin/deliveryList?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
-//       current: page,
-//       totalPages: totalPages,
-//     };
-
-//     if (logisticsOrders.length === 0 && searchQuery) {
-//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
-//     }
-
-//     res.render('admin/deliveryList', {
-//       logisticsOrders,
-//       pagination,
-//       searchQuery,
-//       searchField,
-//       searchStatusField,
-//       page,
-//       perPage,
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// }
 
 const deliveryListPage = async (req, res) => {
   try {
@@ -1104,14 +941,14 @@ const deliveryListPage = async (req, res) => {
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
     const pagination = {
-      prev: page > 1 ? `/admin/deliveryList?page=${page - 1}` : null,
-      next: page < totalPages ? `/admin/deliveryList?page=${page + 1}` : null,
+      prev: page > 1 ? `/customerService/deliveryList?page=${page - 1}` : null,
+      next: page < totalPages ? `/customerService/deliveryList?page=${page + 1}` : null,
       current: page,
       totalPages: totalPages,
     };
 
     // console.log(thisUserValidDeliveryList);
-    res.status(200).render('admin/deliveryList', {
+    res.render('customerService/deliveryList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -1146,11 +983,11 @@ const deliveryDetailsPage = async (req, res) => {
       });
 
     if (delivery) {
-      return res.status(200).render('admin/deliveryDetails', { delivery })
+      return res.render('customerService/deliveryDetails', { delivery })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return res.status(422).redirect('/admin/deliveryList');
+    return redirect('/customerService/deliveryList');
 
   } catch (error) {
     console.error(error);
@@ -1174,65 +1011,12 @@ const removeFromDeliveryList = async (req, res) => {
     await DeliveryList.findByIdAndDelete(delivery._id);
 
     req.flash('success', 'Remove from your "Delivery List" successfully!')
-    return res.status(201).redirect('/admin/deliveryList');
+    res.redirect('/customerService/deliveryList');
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
 }
-
-// const startDeliver = async (req, res) => {
-//   try {
-
-//     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
-//       .populate({
-//         path: 'logisticsOrder_id',
-//         model: 'LogisticsOrder',
-//         match: { status: 'Added to Delivery List' }, // Add the condition here
-//         select: 'status description address paymentStatus paymentAmount deliveryType'
-//       })
-//       .populate({
-//         path: 'user_id',
-//         model: 'User',
-//         select: 'username phone email role status' // Select only the fields you want from User
-//       });
-
-//     if (!thisUserDeliveryList.length) {
-//       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
-//       return res.redirect('/admin/deliveryList');
-//     }
-
-//     for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-//       const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-//       // Check if logisticsOrder is not null or undefined
-//       if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
-
-//         const updatedStatus = await LogisticsOrder.findByIdAndUpdate(
-//           logisticsOrder,
-//           {
-//             status: 'Delivery in Progress',
-//           }
-//         );
-
-//         await updatedStatus.save();
-
-//         console.log(logisticsOrder);
-//       }
-
-//     };
-
-//     req.flash('success', 'Delivery mode is started, please ensure the traffic safety of yourself and others. Good luck!')
-//     return res.redirect('/admin/deliveryList');
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//     // req.flash('error', error)
-//     // return res.redirect('somethingWrong');
-//   }
-// }
 
 const startDeliver = async (req, res) => {
   try {
@@ -1252,7 +1036,7 @@ const startDeliver = async (req, res) => {
 
     if (!thisUserDeliveryList.length) {
       req.flash('warning', 'Your "Start Deliver List" is empty, go add it from "Delivery List" it will show up here!');
-      return res.status(200).redirect('/admin/deliveryList');
+      return res.redirect('/customerService/deliveryList');
     }
 
     for (let i = 0; i < thisUserDeliveryList.length; i++) {
@@ -1277,7 +1061,7 @@ const startDeliver = async (req, res) => {
 
     // console.log(thisUserValidDeliveryList);
     req.flash('success', 'Delivery mode is started, please ensure the traffic safety of yourself and others. Good luck!');
-    return res.status(201).redirect('/admin/startDeliverList');
+    return res.redirect('/customerService/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -1323,7 +1107,7 @@ const startDeliverListPage = async (req, res) => {
 
     if (!thisUserValidDeliveryList.length) {
       req.flash('warning', 'Your "Start Delivery List" is empty, go click "Start deliver" at "Delivery List" it will show up here!');
-      return res.status(200).redirect('/admin/deliveryList');
+      return res.redirect('/customerService/deliveryList');
     }
 
     const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
@@ -1331,14 +1115,14 @@ const startDeliverListPage = async (req, res) => {
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
     const pagination = {
-      prev: page > 1 ? `/admin/startDeliverList?page=${page - 1}` : null,
-      next: page < totalPages ? `/admin/startDeliverList?page=${page + 1}` : null,
+      prev: page > 1 ? `/customerService/startDeliverList?page=${page - 1}` : null,
+      next: page < totalPages ? `/customerService/startDeliverList?page=${page + 1}` : null,
       current: page,
       totalPages: totalPages,
     };
 
     // console.log(thisUserValidDeliveryList);
-    return res.status(200).render('admin/startDeliverList', {
+    return res.render('customerService/startDeliverList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -1373,11 +1157,11 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
       });
 
     if (delivery) {
-      return res.status(200).render('admin/logisticsOrderDetailsAndActions', { delivery })
+      return res.render('customerService/logisticsOrderDetailsAndActions', { delivery })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return res.status(500).redirect('/admin/startDeliverList');
+    return redirect('/customerService/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -1422,7 +1206,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
       } else {
 
         req.flash('error', 'Something wrong, please try again later or ask the order creator for help!');
-        return res.status(500).redirect('/admin/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+        return res.redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
       };
 
       req.flash('success', 'Updated success!');
@@ -1430,7 +1214,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     } else {
 
       req.flash('warning', 'The status field is invalid!');
-      return res.status(422).redirect('/admin/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+      return res.redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
 
     }
 
@@ -1439,7 +1223,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 
-  return res.status(201).redirect('/admin/startDeliverList');
+  return res.redirect('/customerService/startDeliverList');
 }
 
 module.exports = {
@@ -1449,7 +1233,6 @@ module.exports = {
   logisticsOrderListPage,
   editLogisticsOrderPage,
   editLogisticsOrder,
-  deleteEditLogisticsOrder,
   logisticsOrderFeedPage,
   logisticsOrderDetailsPage,
   addToDeliveryList,

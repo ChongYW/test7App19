@@ -20,7 +20,7 @@
         
         <h1 class="mb-4">Create Logistics Order</h1>
 
-        <form action="/admin/createLogisticsOrder" method="POST">
+        <form action="/customerService/createLogisticsOrder" method="POST">
         
           <div class="mb-3">
             <label for="description" class="form-label">Description:</label>
@@ -94,7 +94,7 @@
         
             <div class="mb-3">
               <label for="paymentAmount" class="form-label">Payment Amount:</label>
-              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" step="0.01" required>
+              <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" step="0.01" required>
             </div>
         
             <div class="mb-3">
