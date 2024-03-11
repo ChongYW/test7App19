@@ -29,7 +29,7 @@
                       <h5 class="card-title"><strong>Delivery List <%= (page - 1) * perPage + index + 1 %></strong></h5>
                       <hr>
                       <p class="card-text"><strong>Order ID: </strong><br><%= delivery.logisticsOrder_id._id %></p>
-                      <p class="card-text"><strong>Created By User: </strong><br><%= delivery.user_id.username %></p>
+                      <p class="card-text"><strong>Created By User: </strong><br><%= delivery.logisticsOrder_id.createdByUser.username %></p>
                       <p class="card-text"><strong>Status: </strong><br><%= delivery.logisticsOrder_id.status %>(Your)</p>
                       <p class="card-text"><strong>Description: </strong><br><%= delivery.logisticsOrder_id.description %></p>
                       <p class="card-text"><strong>Customer Type: </strong><br><%= delivery.logisticsOrder_id.customerType %></p>
@@ -43,6 +43,7 @@
                         <%= delivery.logisticsOrder_id.address.postalCode %><br>
                         <%= delivery.logisticsOrder_id.address.country %>
                       </p>
+                      <p class="card-text"><strong>Product Quantity: </strong><br><%= delivery.logisticsOrder_id.productQty %></p>
                       <p class="card-text"><strong>Payment Status: </strong><br><%= delivery.logisticsOrder_id.paymentStatus %></p>
                       <p class="card-text"><strong>Payment Type: </strong><br><%= delivery.logisticsOrder_id.paymentType %></p>
                       <p class="card-text"><strong>Payment Amount: </strong><br><%= delivery.logisticsOrder_id.paymentAmount %></p>

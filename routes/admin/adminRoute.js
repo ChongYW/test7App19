@@ -2,6 +2,7 @@ const express = require('express');
 const route = express.Router();
 const adminController = require('../../controllers/admin/adminController');
 const logisticsOrderController = require('../../controllers/admin/logisticsOrderController');
+const commissionController = require('../../controllers/admin/commissionController');
 const authenticationMiddleware = require('../../middlewares/authenticationMiddleware');
 
 route.get('/dashboard', authenticationMiddleware.ensureAuthenticated, adminController.dashboardPage);
@@ -23,6 +24,14 @@ route.post('/userList/edit/delete/:userId', authenticationMiddleware.ensureAuthe
 
 // usersLogEntriesList.ejs
 route.get('/usersLogEntriesList', authenticationMiddleware.ensureAuthenticated, adminController.usersLogEntriesListPage);
+
+// quantityBasedCommissionList.ejs
+route.get('/quantityBasedCommissionList', authenticationMiddleware.ensureAuthenticated, commissionController.quantityBasedCommissionListPage);
+
+// editUserQuantityBasedCommissionList.ejs
+route.get('/editUserQuantityBasedCommissionList/edit/:userId', authenticationMiddleware.ensureAuthenticated, commissionController.editUserQuantityBasedCommissionListPage);
+route.get('/editUserQuantityBasedCommissionList/:userId', authenticationMiddleware.ensureAuthenticated, commissionController.editUserQuantityBasedCommissionListPage);
+route.post('/editUserQuantityBasedCommissionStatusList', authenticationMiddleware.ensureAuthenticated, commissionController.editUserQuantityBasedCommissionStatusList);
 
 // createLogisticsOrder.ejs
 route.get('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrderPage);

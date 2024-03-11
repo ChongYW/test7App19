@@ -53,6 +53,7 @@
                   <option value="address.city" <%= searchField === 'address.city' ? 'selected' : '' %>>City</option>
                   <option value="address.postalCode" <%= searchField === 'address.postalCode' ? 'selected' : '' %>>Postal Code</option>
                   <option value="address.country" <%= searchField === 'address.country' ? 'selected' : '' %>>Country</option>
+                  <option value="productQty" <%= searchField === 'productQty' ? 'selected' : '' %>>Product Quantity</option>
                   <option value="paymentStatus" <%= searchField === 'paymentStatus' ? 'selected' : '' %>>Payment Status</option>
                   <option value="paymentType" <%= searchField === 'paymentType' ? 'selected' : '' %>>Payment Type</option>
                   <option value="paymentAmount" <%= searchField === 'paymentAmount' ? 'selected' : '' %>>Payment Amount</option>
@@ -86,6 +87,7 @@
               <th>City</th>
               <th>Postal Code</th>
               <th>Country</th>
+              <th>Product Quantity</th>
               <th>Payment Status</th>
               <th>Payment Type</th>
               <th>Payment Amount</th>
@@ -112,6 +114,7 @@
                 <td><%= logisticsOrder.address.city %></td>
                 <td><%= logisticsOrder.address.postalCode %></td>
                 <td><%= logisticsOrder.address.country %></td>
+                <td><%= logisticsOrder.productQty %></td>
                 <td><%= logisticsOrder.paymentStatus %></td>
                 <td><%= logisticsOrder.paymentType %></td>
                 <td><%= logisticsOrder.paymentAmount %></td>

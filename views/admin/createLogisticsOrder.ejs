@@ -30,8 +30,8 @@
           <div class="mb-3">
             <label for="customerType" class="form-label">Customer Type:</label>
             <select id="customerType" name="customerType" class="form-select">
-                <option value="New customer">New customer</option>
-                <option value="Repeat Order">Repeat Order</option>
+                <option value="New Customer" <%= customerType === 'New Customer' ? 'selected' : '' %>>New Customer</option>
+                <option value="Repeat Order" <%= customerType === 'Repeat Order' ? 'selected' : '' %>>Repeat Order</option>
             </select>
           </div>
 
@@ -42,7 +42,7 @@
 
           <div class="mb-3">
             <label for="customerContact" class="form-label">Customer Contact:</label>
-            <input type="text" class="form-control" id="customerContact" name="customerContact" value="<%= typeof customerContact !== 'undefined' ? customerContact : '' %>" required>
+            <input type="number" class="form-control" id="customerContact" name="customerContact" value="<%= typeof customerContact !== 'undefined' ? customerContact : '' %>" required>
           </div>
         
             <div class="mb-3">
@@ -80,6 +80,11 @@
             <div class="mb-3">
               <label for="country" class="form-label">Country:</label>
               <input type="text" class="form-control" id="country" name="country" value="<%= typeof country !== 'undefined' ? country : '' %>">
+            </div>
+
+            <div class="mb-3">
+              <label for="productQty" class="form-label">Product Quantity:</label>
+              <input type="number" class="form-control" id="productQty" name="productQty" value="<%= typeof productQty !== 'undefined' ? productQty : '' %>" step="0.01" required>
             </div>
         
             <div class="mb-3">

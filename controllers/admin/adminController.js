@@ -465,7 +465,7 @@ const editUserPage = async (req, res) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId);
-    res.render('admin/editUser', { user });
+    res.status(200).render('admin/editUser', { user });
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');

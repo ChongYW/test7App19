@@ -1,14 +1,231 @@
 const LogisticsOrder = require('../../models/logisticsOrderModel');
 const User = require('../../models/userModel');
-const DeliveryList = require('../../models/deliveryListModel')
+const DeliveryList = require('../../models/deliveryListModel');
+const QuantityBasedCommission = require('../../models/quantityBasedCommissionModel');
 const validator = require('validator');
 const paginate = require('express-paginate');
 const mongoose = require('mongoose');
 
 const createLogisticsOrderPage = (req, res) => {
-  res.status(200).render('admin/createLogisticsOrder');
+
+  const customerType = "New Customer";
+
+  res.status(200).render('admin/createLogisticsOrder',
+    { customerType }
+  );
 };
 
+// const createLogisticsOrder = async (req, res) => {
+//   // Extract address details
+//   const {
+//     description,
+//     customerType,
+//     customerName,
+//     customerContact,
+//     allowEmptyAddress,
+//     address1, address2, city, postalCode, country,
+//     productQty,
+//     paymentStatus,
+//     paymentType,
+//     paymentAmount,
+//     deliveryType,
+//     remark
+//   } = req.body;
+
+//   try {
+//     if (allowEmptyAddress === 'yes' && (!address1.trim() && !address2.trim() && !city.trim() && !postalCode.trim() && !country.trim())) {
+//       const emptyAddress = 'Order creator left it empty.';
+//       let isValid = true;
+
+//       if (!description.trim()) {
+//         isValid = false;
+//         req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
+//       }
+
+//       if (!customerType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Type must be filled in.');
+//       }
+
+//       if (!customerName.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Name must be filled in.');
+//       }
+
+//       if (!customerContact.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Contact must be filled in.');
+//       }
+
+//       if (!productQty.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Product Quantity must be filled in.');
+//       }
+
+//       if (!paymentStatus.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Status must be filled in.');
+//       }
+
+//       if (!paymentType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Type must be filled in.');
+//       }
+
+//       if (!paymentAmount.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Amount must be filled in.');
+//       }
+
+//       if (!deliveryType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Delivery Type must be filled in.');
+//       }
+
+//       if (isValid) {
+//         const logisticsOrder = new LogisticsOrder({
+//           createdByUser: req.user._id,
+//           status: 'Draft Order',
+//           description: description,
+//           customerType: customerType,
+//           customerName: customerName,
+//           customerContact: customerContact,
+//           address: {
+//             address1: emptyAddress,
+//             address2: '-',
+//             city: '-',
+//             postalCode: '-',
+//             country: '-'
+//           },
+//           productQty: productQty,
+//           paymentStatus: paymentStatus,
+//           paymentType: paymentType,
+//           paymentAmount: paymentAmount,
+//           deliveryType: deliveryType,
+//           remark
+//         });
+
+//         await logisticsOrder.save();
+//         req.flash('success', 'Logistics Order created successfully!');
+//         return res.status(201).render('admin/createLogisticsOrder');
+//       }
+//     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
+//       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
+//     } else {
+//       // If the user does not choose "Allow empty address"
+//       let isValid = true;
+
+//       if (!customerType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Type must be filled in.');
+//       }
+
+//       if (!customerName.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Name must be filled in.');
+//       }
+
+//       if (!customerContact.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Customer Contact must be filled in.');
+//       }
+
+//       if (!address1.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Address 1 must be filled in.');
+//       }
+
+//       if (!city.trim()) {
+//         isValid = false;
+//         req.flash('error', 'City must be filled in.');
+//       }
+
+//       if (!postalCode.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Postal Code must be filled in.');
+//       }
+
+//       if (!country.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Country must be filled in.');
+//       }
+
+//       if (!productQty.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Product Quantity must be filled in.');
+//       }
+
+//       if (!paymentStatus.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Status must be filled in.');
+//       }
+
+//       if (!paymentType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Type must be filled in.');
+//       }
+
+//       if (!paymentAmount.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Payment Amount must be filled in.');
+//       }
+
+//       if (!deliveryType.trim()) {
+//         isValid = false;
+//         req.flash('error', 'Delivery Type must be filled in.');
+//       }
+
+//       if (isValid) {
+//         // Create a new LogisticsOrder document
+//         const logisticsOrder = new LogisticsOrder({
+//           createdByUser: req.user._id, // Replace with the actual user ID
+//           status: 'Draft Order',
+//           description,
+//           customerType,
+//           customerName,
+//           customerContact,
+//           address: {
+//             address1,
+//             address2,
+//             city,
+//             postalCode,
+//             country
+//           },
+//           productQty,
+//           paymentStatus,
+//           paymentType,
+//           paymentAmount,
+//           deliveryType,
+//           remark
+//         });
+
+//         await logisticsOrder.save();
+//         req.flash('success', 'Logistics Order created successfully!');
+//         return res.status(201).render('admin/createLogisticsOrder');
+//       }
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     req.flash('error', error.message);
+//   }
+
+//   return res.status(422).render('admin/createLogisticsOrder', {
+//     description,
+//     customerType,
+//     customerName,
+//     customerContact,
+//     allowEmptyAddress,
+//     address1, address2, city, postalCode, country,
+//     productQty,
+//     paymentStatus,
+//     paymentType,
+//     paymentAmount,
+//     deliveryType,
+//     remark
+//   });
+// };
+
+// Need to change it only show the create by current user "Logistics Order Pending List".
 const createLogisticsOrder = async (req, res) => {
   // Extract address details
   const {
@@ -18,6 +235,7 @@ const createLogisticsOrder = async (req, res) => {
     customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
@@ -35,9 +253,41 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
       }
 
-      if (!customerType.trim()) {
+      const allowedCustomerTypeValue = [
+        'New Customer',
+        'Repeat Order',
+      ];
+      if (!allowedCustomerTypeValue.includes(customerType)) {
         isValid = false;
-        req.flash('error', 'Customer Type must be filled in.');
+        req.flash('error', 'Invalid Customer Type.');
+      }
+      if (customerType === "Repeat Order") {
+        const existCustomer = await LogisticsOrder.find({
+          createdByUser: req.user._id,
+          customerName: customerName,
+          customerContact: customerContact
+        });
+
+        if (existCustomer.length > 0) {
+          isValid = true;
+        } else {
+          isValid = false;
+          req.flash('error', 'No repeat customer found, "Customer Name" and "Customer Contact" must exist.');
+        }
+      } else {
+        if (customerContact.length < 11 || customerContact.length > 12 || !validator.isMobilePhone(customerContact, 'any', { strictMode: false })) {
+          isValid = false;
+          req.flash('error', 'Invalid phone number.');
+        }
+
+        const existCustomerContact = await LogisticsOrder.find({
+          customerContact: customerContact,
+        });
+
+        if (existCustomerContact.length > 0) {
+          isValid = false;
+          req.flash('error', 'Customer Contact exist.');
+        }
       }
 
       if (!customerName.trim()) {
@@ -45,9 +295,9 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Customer Name must be filled in.');
       }
 
-      if (!customerContact.trim()) {
+      if (!productQty.trim()) {
         isValid = false;
-        req.flash('error', 'Customer Contact must be filled in.');
+        req.flash('error', 'Product Quantity must be filled in.');
       }
 
       if (!paymentStatus.trim()) {
@@ -85,6 +335,7 @@ const createLogisticsOrder = async (req, res) => {
             postalCode: '-',
             country: '-'
           },
+          productQty: productQty,
           paymentStatus: paymentStatus,
           paymentType: paymentType,
           paymentAmount: paymentAmount,
@@ -94,7 +345,7 @@ const createLogisticsOrder = async (req, res) => {
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder');
+        return res.status(201).render('admin/createLogisticsOrder', { customerType });
       }
     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
@@ -102,19 +353,46 @@ const createLogisticsOrder = async (req, res) => {
       // If the user does not choose "Allow empty address"
       let isValid = true;
 
-      if (!customerType.trim()) {
+      const allowedCustomerTypeValue = [
+        'New Customer',
+        'Repeat Order',
+      ];
+      if (!allowedCustomerTypeValue.includes(customerType)) {
         isValid = false;
-        req.flash('error', 'Customer Type must be filled in.');
+        req.flash('error', 'Invalid Customer Type.');
+      }
+      if (customerType === "Repeat Order") {
+        const existCustomer = await LogisticsOrder.find({
+          createdByUser: req.user._id,
+          customerName: customerName,
+          customerContact: customerContact
+        });
+
+        if (existCustomer.length > 0) {
+          isValid = true;
+        } else {
+          isValid = false;
+          req.flash('error', 'No repeat customer found, "Customer Name" and "Customer Contact" must exist.');
+        }
+      } else {
+        if (customerContact.length < 11 || customerContact.length > 12 || !validator.isMobilePhone(customerContact, 'any', { strictMode: false })) {
+          isValid = false;
+          req.flash('error', 'Invalid phone number.');
+        }
+
+        const existCustomerContact = await LogisticsOrder.find({
+          customerContact: customerContact,
+        });
+
+        if (existCustomerContact.length > 0) {
+          isValid = false;
+          req.flash('error', 'Customer Contact exist.');
+        }
       }
 
       if (!customerName.trim()) {
         isValid = false;
         req.flash('error', 'Customer Name must be filled in.');
-      }
-
-      if (!customerContact.trim()) {
-        isValid = false;
-        req.flash('error', 'Customer Contact must be filled in.');
       }
 
       if (!address1.trim()) {
@@ -135,6 +413,11 @@ const createLogisticsOrder = async (req, res) => {
       if (!country.trim()) {
         isValid = false;
         req.flash('error', 'Country must be filled in.');
+      }
+
+      if (!productQty.trim()) {
+        isValid = false;
+        req.flash('error', 'Product Quantity must be filled in.');
       }
 
       if (!paymentStatus.trim()) {
@@ -173,6 +456,7 @@ const createLogisticsOrder = async (req, res) => {
             postalCode,
             country
           },
+          productQty,
           paymentStatus,
           paymentType,
           paymentAmount,
@@ -182,7 +466,7 @@ const createLogisticsOrder = async (req, res) => {
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder');
+        return res.status(201).render('admin/createLogisticsOrder', { customerType });
       }
     }
   } catch (error) {
@@ -197,6 +481,7 @@ const createLogisticsOrder = async (req, res) => {
     customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
@@ -205,7 +490,6 @@ const createLogisticsOrder = async (req, res) => {
   });
 };
 
-// Need to change it only show the create by current user "Logistics Order Pending List".
 const logisticsOrderPendingListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -261,6 +545,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
@@ -366,6 +651,7 @@ const logisticsOrderListPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
@@ -388,6 +674,7 @@ const logisticsOrderListPage = async (req, res) => {
 
           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
           break;
+
         default:
           req.flash('warning', 'Invalid search field.');
           return res.status(200).redirect('/admin/logisticsOrderList');
@@ -496,6 +783,7 @@ const editLogisticsOrder = async (req, res) => {
     customerName,
     customerContact,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
@@ -601,6 +889,7 @@ const editLogisticsOrder = async (req, res) => {
             customerName,
             customerContact,
             address1, address2, city, postalCode, country,
+            productQty,
             paymentStatus,
             paymentType,
             paymentAmount,
@@ -660,6 +949,7 @@ const editLogisticsOrder = async (req, res) => {
             postalCode,
             country
           },
+          productQty,
           paymentStatus,
           paymentType,
           paymentAmount,
@@ -780,6 +1070,7 @@ const logisticsOrderFeedPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
@@ -814,7 +1105,8 @@ const logisticsOrderFeedPage = async (req, res) => {
       }
     }
 
-    const logisticsOrders = await LogisticsOrder.find(query)
+    const logisticsOrders = await LogisticsOrder
+      .find(query)
       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
       .skip(skip)
@@ -1073,8 +1365,13 @@ const deliveryListPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Added to Delivery List' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1136,8 +1433,13 @@ const deliveryDetailsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Added to Delivery List' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1242,7 +1544,7 @@ const startDeliver = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1299,8 +1601,13 @@ const startDeliverListPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Delivery in Progress' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1363,8 +1670,13 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Delivery in Progress' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1387,6 +1699,10 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
 
 const logisticsOrderDetailsAndActions = async (req, res) => {
   try {
+    const quantityBasedCommissionForNewCustomerAmount = 20;
+    const quantityBasedCommissionForRepeatOrderAmount = 30;
+    let totalCurrentLogisticOrderCommissionAmount = 0;
+
     let isValid = true;
     const deliveryId = req.params.deliveryId;
     const { status } = req.body;
@@ -1415,10 +1731,32 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
           delivery.logisticsOrder_id,
           {
             status: status,
-          }
+          },
+          { new: true }
         );
 
+        if (status === 'Delivered Successfully') {
+          if (updatedStatus.customerType === 'New customer') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForNewCustomerAmount;
+
+          } else if (updatedStatus.customerType === 'Repeat Order') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForRepeatOrderAmount;
+          }
+
+
+          const createQuantityBasedCommission = new QuantityBasedCommission({
+            logisticsOrder_id: updatedStatus._id,
+            user_id: updatedStatus.createdByUser,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentLogisticOrderCommissionAmount,
+          });
+
+          await createQuantityBasedCommission.save();
+        }
+
+
         await updatedStatus.save();
+
       } else {
 
         req.flash('error', 'Something wrong, please try again later or ask the order creator for help!');

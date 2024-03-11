@@ -113,6 +113,11 @@
         </div>
 
         <div class="mb-3">
+          <label for="productQty" class="form-label">Product Quantity:</label>
+          <input type="number" class="form-control" id="productQty" name="productQty" value="<%= logisticsOrder.productQty %>" step="0.01" required>
+        </div>
+
+        <div class="mb-3">
           <label for="paymentStatus" class="form-label">Payment Status:</label>
           <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" value="<%= logisticsOrder.paymentStatus %>" required>
         </div>
@@ -124,7 +129,7 @@
 
         <div class="mb-3">
           <label for="paymentAmount" class="form-label">Payment Amount:</label>
-          <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
+          <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
       </div>
 
         <div class="mb-3">
