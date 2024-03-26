@@ -33,6 +33,14 @@ route.get('/editUserQuantityBasedCommissionList/edit/:userId', authenticationMid
 route.get('/editUserQuantityBasedCommissionList/:userId', authenticationMiddleware.ensureAuthenticated, commissionController.editUserQuantityBasedCommissionListPage);
 route.post('/editUserQuantityBasedCommissionStatusList', authenticationMiddleware.ensureAuthenticated, commissionController.editUserQuantityBasedCommissionStatusList);
 
+// deliveryCommissionList.ejs
+route.get('/deliveryCommissionList', authenticationMiddleware.ensureAuthenticated, commissionController.deliveryCommissionListPage);
+
+// editUserDeliveryCommissionList.ejs
+route.get('/editUserDeliveryCommissionList/edit/:userId', authenticationMiddleware.ensureAuthenticated, commissionController.editUserDeliveryCommissionListPage);
+route.get('/editUserDeliveryCommissionList/:userId', authenticationMiddleware.ensureAuthenticated, commissionController.editUserDeliveryCommissionListPage);
+route.post('/editUserDeliveryCommissionList', authenticationMiddleware.ensureAuthenticated, commissionController.editUserDeliveryCommissionStatusList);
+
 // createLogisticsOrder.ejs
 route.get('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrderPage);
 route.post('/createLogisticsOrder', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.createLogisticsOrder);

@@ -61,25 +61,23 @@
         <% }); %>
       </div>
 
-    <!-- Pagination links -->
-    <div class="d-flex justify-content-between m-3">
-      <% if (pagination.prev) { %>
-        <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
-      <% } %>
-
-      <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
-
-      <% if (pagination.next) { %>
-        <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
-      <% } %>
-    </div>
+      <div class="container">
+        <!-- Pagination links -->
+        <div class="d-flex justify-content-between mt-3">
+          <% if (pagination.prev) { %>
+            <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
+          <% } %>
+  
+          <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
+  
+          <% if (pagination.next) { %>
+            <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
+          <% } %>
+        </div>
+      </div>
 
     <% if (thisUserValidDeliveryList.length >= 1) { %>
       <div class="row p-5 sticky-bottom">
-        <!-- <div class="d-grid p-5 sticky-bottom">
-          <form action="/admin/deliveryList/deliveryDetails/startDeliver" method="put">
-            <a class="btn btn-primary btn-lg"><button type="submit">Start deliver</button></a>
-          </form> -->
           
           <form class="col-12 mb-2" method="post" action="/admin/deliveryList/deliveryDetails/startDeliver"
           onsubmit="return confirm('Start the deliver mode?');">

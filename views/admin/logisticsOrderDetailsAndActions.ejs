@@ -54,6 +54,15 @@
                   <option value="Cancel Delivery">Cancel Delivery</option>
                 </select>
 
+                <% if (delivery.logisticsOrder_id.paymentType === 'COD') { %>
+                  <label for="receivedPayment" class="form-label">Received Payment($<%= delivery.logisticsOrder_id.paymentAmount %>)?</label>
+                  <select id="receivedPayment" name="receivedPayment" class="form-select my-2">
+                    <option value="none">Please select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                <% } %>
+
                   <a href="#" class="btn btn-success w-100 my-2">
                       <button class="btn btn-success w-100" type="submit">Update</button>
                   </a>

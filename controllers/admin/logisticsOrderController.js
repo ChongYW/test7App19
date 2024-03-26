@@ -2,6 +2,7 @@ const LogisticsOrder = require('../../models/logisticsOrderModel');
 const User = require('../../models/userModel');
 const DeliveryList = require('../../models/deliveryListModel');
 const QuantityBasedCommission = require('../../models/quantityBasedCommissionModel');
+const DeliveryCommission = require('../../models/deliveryCommissionModel');
 const validator = require('validator');
 const paginate = require('express-paginate');
 const mongoose = require('mongoose');
@@ -9,221 +10,15 @@ const mongoose = require('mongoose');
 const createLogisticsOrderPage = (req, res) => {
 
   const customerType = "New Customer";
+  const paymentType = "Online Transfer";
 
   res.status(200).render('admin/createLogisticsOrder',
-    { customerType }
+    {
+      customerType,
+      paymentType
+    }
   );
 };
-
-// const createLogisticsOrder = async (req, res) => {
-//   // Extract address details
-//   const {
-//     description,
-//     customerType,
-//     customerName,
-//     customerContact,
-//     allowEmptyAddress,
-//     address1, address2, city, postalCode, country,
-//     productQty,
-//     paymentStatus,
-//     paymentType,
-//     paymentAmount,
-//     deliveryType,
-//     remark
-//   } = req.body;
-
-//   try {
-//     if (allowEmptyAddress === 'yes' && (!address1.trim() && !address2.trim() && !city.trim() && !postalCode.trim() && !country.trim())) {
-//       const emptyAddress = 'Order creator left it empty.';
-//       let isValid = true;
-
-//       if (!description.trim()) {
-//         isValid = false;
-//         req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
-//       }
-
-//       if (!customerType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Type must be filled in.');
-//       }
-
-//       if (!customerName.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Name must be filled in.');
-//       }
-
-//       if (!customerContact.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Contact must be filled in.');
-//       }
-
-//       if (!productQty.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Product Quantity must be filled in.');
-//       }
-
-//       if (!paymentStatus.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Status must be filled in.');
-//       }
-
-//       if (!paymentType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Type must be filled in.');
-//       }
-
-//       if (!paymentAmount.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Amount must be filled in.');
-//       }
-
-//       if (!deliveryType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Delivery Type must be filled in.');
-//       }
-
-//       if (isValid) {
-//         const logisticsOrder = new LogisticsOrder({
-//           createdByUser: req.user._id,
-//           status: 'Draft Order',
-//           description: description,
-//           customerType: customerType,
-//           customerName: customerName,
-//           customerContact: customerContact,
-//           address: {
-//             address1: emptyAddress,
-//             address2: '-',
-//             city: '-',
-//             postalCode: '-',
-//             country: '-'
-//           },
-//           productQty: productQty,
-//           paymentStatus: paymentStatus,
-//           paymentType: paymentType,
-//           paymentAmount: paymentAmount,
-//           deliveryType: deliveryType,
-//           remark
-//         });
-
-//         await logisticsOrder.save();
-//         req.flash('success', 'Logistics Order created successfully!');
-//         return res.status(201).render('admin/createLogisticsOrder');
-//       }
-//     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
-//       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
-//     } else {
-//       // If the user does not choose "Allow empty address"
-//       let isValid = true;
-
-//       if (!customerType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Type must be filled in.');
-//       }
-
-//       if (!customerName.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Name must be filled in.');
-//       }
-
-//       if (!customerContact.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Customer Contact must be filled in.');
-//       }
-
-//       if (!address1.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Address 1 must be filled in.');
-//       }
-
-//       if (!city.trim()) {
-//         isValid = false;
-//         req.flash('error', 'City must be filled in.');
-//       }
-
-//       if (!postalCode.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Postal Code must be filled in.');
-//       }
-
-//       if (!country.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Country must be filled in.');
-//       }
-
-//       if (!productQty.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Product Quantity must be filled in.');
-//       }
-
-//       if (!paymentStatus.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Status must be filled in.');
-//       }
-
-//       if (!paymentType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Type must be filled in.');
-//       }
-
-//       if (!paymentAmount.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Payment Amount must be filled in.');
-//       }
-
-//       if (!deliveryType.trim()) {
-//         isValid = false;
-//         req.flash('error', 'Delivery Type must be filled in.');
-//       }
-
-//       if (isValid) {
-//         // Create a new LogisticsOrder document
-//         const logisticsOrder = new LogisticsOrder({
-//           createdByUser: req.user._id, // Replace with the actual user ID
-//           status: 'Draft Order',
-//           description,
-//           customerType,
-//           customerName,
-//           customerContact,
-//           address: {
-//             address1,
-//             address2,
-//             city,
-//             postalCode,
-//             country
-//           },
-//           productQty,
-//           paymentStatus,
-//           paymentType,
-//           paymentAmount,
-//           deliveryType,
-//           remark
-//         });
-
-//         await logisticsOrder.save();
-//         req.flash('success', 'Logistics Order created successfully!');
-//         return res.status(201).render('admin/createLogisticsOrder');
-//       }
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     req.flash('error', error.message);
-//   }
-
-//   return res.status(422).render('admin/createLogisticsOrder', {
-//     description,
-//     customerType,
-//     customerName,
-//     customerContact,
-//     allowEmptyAddress,
-//     address1, address2, city, postalCode, country,
-//     productQty,
-//     paymentStatus,
-//     paymentType,
-//     paymentAmount,
-//     deliveryType,
-//     remark
-//   });
-// };
 
 // Need to change it only show the create by current user "Logistics Order Pending List".
 const createLogisticsOrder = async (req, res) => {
@@ -240,6 +35,7 @@ const createLogisticsOrder = async (req, res) => {
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   } = req.body;
 
@@ -305,9 +101,15 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Payment Status must be filled in.');
       }
 
-      if (!paymentType.trim()) {
+      const allowedPaymentTypeValue = [
+        'Online Transfer',
+        'COD',
+        'KOL',
+        'Sample',
+      ];
+      if (!allowedPaymentTypeValue.includes(paymentType)) {
         isValid = false;
-        req.flash('error', 'Payment Type must be filled in.');
+        req.flash('error', 'Invalid Payment Type.');
       }
 
       if (!paymentAmount.trim()) {
@@ -318,6 +120,14 @@ const createLogisticsOrder = async (req, res) => {
       if (!deliveryType.trim()) {
         isValid = false;
         req.flash('error', 'Delivery Type must be filled in.');
+      }
+
+      if (!thirdPartyTrackingCode.trim()) {
+        thirdPartyTrackingCode = '-';
+      }
+
+      if (!remark.trim()) {
+        remark = '-';
       }
 
       if (isValid) {
@@ -340,12 +150,17 @@ const createLogisticsOrder = async (req, res) => {
           paymentType: paymentType,
           paymentAmount: paymentAmount,
           deliveryType: deliveryType,
+          thirdPartyTrackingCode: thirdPartyTrackingCode,
           remark
         });
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder', { customerType });
+        return res.status(201).render('admin/createLogisticsOrder',
+          {
+            customerType,
+            paymentType,
+          });
       }
     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
@@ -440,6 +255,14 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Delivery Type must be filled in.');
       }
 
+      if (!thirdPartyTrackingCode.trim()) {
+        thirdPartyTrackingCode = '-';
+      }
+
+      if (!remark.trim()) {
+        remark = '-';
+      }
+
       if (isValid) {
         // Create a new LogisticsOrder document
         const logisticsOrder = new LogisticsOrder({
@@ -461,12 +284,17 @@ const createLogisticsOrder = async (req, res) => {
           paymentType,
           paymentAmount,
           deliveryType,
+          thirdPartyTrackingCode,
           remark
         });
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.status(201).render('admin/createLogisticsOrder', { customerType });
+        return res.status(201).render('admin/createLogisticsOrder',
+          {
+            customerType,
+            paymentType,
+          });
       }
     }
   } catch (error) {
@@ -486,6 +314,7 @@ const createLogisticsOrder = async (req, res) => {
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   });
 };
@@ -587,6 +416,8 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No "${searchStatusField}" order status yet...`);
     }
 
     return res.status(200).render('admin/logisticsOrderPendingList', {
@@ -698,6 +529,8 @@ const logisticsOrderListPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No Logistics Orders yet...`);
     }
 
     return res.status(200).render('admin/logisticsOrderList', {
@@ -788,6 +621,7 @@ const editLogisticsOrder = async (req, res) => {
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   } = req.body;
 
@@ -795,7 +629,7 @@ const editLogisticsOrder = async (req, res) => {
     // Check if the LogisticsOrder exists
     const logisticsOrder = await LogisticsOrder.findById(logisticsOrderId);
     if (!logisticsOrder) {
-      console.log('LogisticsOrder not found');
+      // console.log('LogisticsOrder not found');
       // Handle the case where LogisticsOrder is not found, e.g., return an error response
       req.flash('error', 'Logistics Order is not found, please try agian...');
       return res.status(422).redirect('/admin/logisticsOrderList');
@@ -894,6 +728,7 @@ const editLogisticsOrder = async (req, res) => {
             paymentType,
             paymentAmount,
             deliveryType,
+            thirdPartyTrackingCode,
             remark
           }
         );
@@ -904,31 +739,6 @@ const editLogisticsOrder = async (req, res) => {
       } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
-        // req.flash('error', 'Error saving logistics order.');
-        // return res.status(422).render('admin/editLogisticsOrder', {
-        //   logisticsOrder: {
-        //     _id: logisticsOrder,
-        //     createdByUser,
-        //     addToDeliveryListId,
-        //     status,
-        //     description,
-        //     customerType,
-        //     customerName,
-        //     customerContact,
-        //     address: {
-        //       address1,
-        //       address2,
-        //       city,
-        //       postalCode,
-        //       country
-        //     },
-        //     paymentStatus,
-        //     paymentType,
-        //     paymentAmount,
-        //     deliveryType,
-        //     remark
-        //   }
-        // })
       }
     } else {
       // Render the edit form with the input values if there's an issue
@@ -954,6 +764,7 @@ const editLogisticsOrder = async (req, res) => {
           paymentType,
           paymentAmount,
           deliveryType,
+          thirdPartyTrackingCode,
           remark
         }
       })
@@ -972,7 +783,9 @@ const deleteEditLogisticsOrder = async (req, res) => {
   try {
     const orderId = req.params.logisticsOrderId;
     // Remove user from the database
-    await LogisticsOrder.findByIdAndDelete(orderId);
+    await LogisticsOrder.findByIdAndUpdate(orderId, {
+      status: 'hide'
+    });
 
     req.flash('success', 'Logistics Order delete successfully!')
     res.status(201).redirect('/admin/logisticsOrderList');
@@ -1124,6 +937,8 @@ const logisticsOrderFeedPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No order feeds yet...`);
     }
 
     res.status(200).render('admin/logisticsOrderFeed', {
@@ -1199,173 +1014,30 @@ const addToDeliveryList = async (req, res) => {
   }
 };
 
-// const deliveryListPage = async (req, res) => {
-//   try {
-//     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id');
-
-//     if (!thisUserDeliveryList.length) {
-//       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
-//       return res.redirect('/admin/deliveryList');
-//     }
-
-//     const page = parseInt(req.query.page) || 1;
-//     const perPage = 9; // Adjust this value based on your preference
-//     const skip = (page - 1) * perPage;
-
-//     // Initialize variables with default values
-//     let searchQuery = '';
-//     let searchField = '_id';
-//     const searchStatusField = 'Added to Delivery List';
-
-//     if (req.query.search) {
-//       searchQuery = req.query.search;
-//     }
-
-//     if (req.query.searchField) {
-//       searchField = req.query.searchField;
-//     }
-
-//     let query = {
-//       _id: thisUserDeliveryList.logisticsOrder_id,
-//       status: searchStatusField,
-//     };
-
-//     if (thisUserDeliveryList.length > 0) {
-//       // Assuming you want to filter based on the first logisticsOrder_id in the array
-//       query._id = thisUserDeliveryList[0].logisticsOrder_id;
-//     }
-
-//     // Need to adjust the search range to userB and userC.
-//     if (searchQuery && searchField) {
-//       switch (searchField) {
-//         case 'paymentAmount':
-//           // Check if the entered value is a valid number
-//           const paymentAmount = parseFloat(searchQuery);
-
-//           if (isNaN(paymentAmount)) {
-//             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-//             return res.redirect('/admin/deliveryList');
-//           }
-
-//           query = { ...query, paymentAmount: paymentAmount };
-//           break;
-
-//         case '_id':
-//           // Check if the entered value is a valid ObjectId
-//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
-//           } else {
-//             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-//             return res.redirect('/admin/deliveryList');
-//           }
-//           break;
-
-//         case 'createdByUser':
-//           // Check if the entered value is a valid ObjectId
-//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
-//           } else {
-//             // If not a valid ObjectId, assume it's a user name
-//             const userQuery = { username: new RegExp(searchQuery, 'i') };
-//             const users = await User.find(userQuery, '_id');
-//             const userIds = users.map(user => user._id);
-
-//             if (userIds.length === 0) {
-//               req.flash('warning', `No user found with the username "${searchQuery}".`);
-//               return res.redirect('/admin/deliveryList');
-//             }
-
-//             query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
-//           }
-//           break;
-
-//         // Your existing cases for different search fields
-//         case 'status':
-//         case 'description':
-//         case 'address.address1':
-//         case 'address.address2':
-//         case 'address.city':
-//         case 'address.postalCode':
-//         case 'address.country':
-//         case 'paymentStatus':
-//         case 'deliveryType':
-//           query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
-//           break;
-
-//         case 'createdAt':
-//         case 'updatedAt':
-//           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
-//           const startDate = new Date(searchQuery);
-
-//           if (isNaN(startDate.getTime())) {
-//             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-//             return res.redirect('/admin/deliveryList');
-//           }
-
-//           startDate.setHours(0, 0, 0, 0);
-//           const endDate = new Date(startDate);
-//           endDate.setHours(23, 59, 59, 999);
-
-//           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
-//           break;
-
-//         // Other cases for different search fields
-
-//         default:
-//           req.flash('warning', 'Invalid search field.');
-//           return res.redirect('/admin/deliveryList');
-//       }
-//     }
-
-//     const logisticsOrders = await LogisticsOrder.find(query)
-//       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
-//       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
-//       .skip(skip)
-//       .limit(perPage);
-
-//     const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
-//     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
-
-//     const pagination = {
-//       prev: page > 1 ? `/admin/deliveryList?page=${page - 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
-//       next: page < totalPages ? `/admin/deliveryList?page=${page + 1}&search=${searchQuery || ''}&searchStatusField=${searchStatusField || ''}&searchField=${searchField || ''}` : null,
-//       current: page,
-//       totalPages: totalPages,
-//     };
-
-//     if (logisticsOrders.length === 0 && searchQuery) {
-//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
-//     }
-
-//     res.render('admin/deliveryList', {
-//       logisticsOrders,
-//       pagination,
-//       searchQuery,
-//       searchField,
-//       searchStatusField,
-//       page,
-//       perPage,
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// }
-
 const deliveryListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        createdByUser: req.user._id,
+        status: 'Added to Delivery List'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' },
         select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
         populate: {
           path: 'createdByUser',
@@ -1381,22 +1053,15 @@ const deliveryListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -1407,7 +1072,6 @@ const deliveryListPage = async (req, res) => {
       totalPages: totalPages,
     };
 
-    // console.log(thisUserValidDeliveryList);
     res.status(200).render('admin/deliveryList', {
       thisUserValidDeliveryList,
       pagination,
@@ -1418,8 +1082,6 @@ const deliveryListPage = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
-    // req.flash('error', error)
-    // return res.redirect('somethingWrong');
   }
 };
 
@@ -1483,59 +1145,6 @@ const removeFromDeliveryList = async (req, res) => {
   }
 }
 
-// const startDeliver = async (req, res) => {
-//   try {
-
-//     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
-//       .populate({
-//         path: 'logisticsOrder_id',
-//         model: 'LogisticsOrder',
-//         match: { status: 'Added to Delivery List' }, // Add the condition here
-//         select: 'status description address paymentStatus paymentAmount deliveryType'
-//       })
-//       .populate({
-//         path: 'user_id',
-//         model: 'User',
-//         select: 'username phone email role status' // Select only the fields you want from User
-//       });
-
-//     if (!thisUserDeliveryList.length) {
-//       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
-//       return res.redirect('/admin/deliveryList');
-//     }
-
-//     for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-//       const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-//       // Check if logisticsOrder is not null or undefined
-//       if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
-
-//         const updatedStatus = await LogisticsOrder.findByIdAndUpdate(
-//           logisticsOrder,
-//           {
-//             status: 'Delivery in Progress',
-//           }
-//         );
-
-//         await updatedStatus.save();
-
-//         console.log(logisticsOrder);
-//       }
-
-//     };
-
-//     req.flash('success', 'Delivery mode is started, please ensure the traffic safety of yourself and others. Good luck!')
-//     return res.redirect('/admin/deliveryList');
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//     // req.flash('error', error)
-//     // return res.redirect('somethingWrong');
-//   }
-// }
-
 const startDeliver = async (req, res) => {
   try {
 
@@ -1589,19 +1198,101 @@ const startDeliver = async (req, res) => {
   }
 }
 
+// const startDeliverListPage = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const perPage = 9; // Adjust this value based on your preference
+//     const skip = (page - 1) * perPage;
+
+//     let thisUserValidDeliveryList = [];
+
+//     const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+//       .populate({
+//         path: 'logisticsOrder_id',
+//         model: 'LogisticsOrder',
+//         match: { status: 'Delivery in Progress' },
+//         select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+//         populate: {
+//           path: 'createdByUser',
+//           model: 'User',
+//           select: 'username'
+//         }
+//       })
+//       .populate({
+//         path: 'user_id',
+//         model: 'User',
+//         select: 'username phone email role status' // Select only the fields you want from User
+//       })
+//       .skip(skip)
+//       .limit(perPage);
+
+//     for (let i = 0; i < thisUserDeliveryList.length; i++) {
+
+//       const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
+
+//       // Check if logisticsOrder is not null or undefined
+//       if (logisticsOrder && logisticsOrder.status === 'Delivery in Progress') {
+//         thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
+//       }
+
+//     }
+
+//     if (!thisUserValidDeliveryList.length) {
+//       req.flash('warning', 'Your "Start Delivery List" is empty.');
+//       return res.status(200).redirect('/admin/deliveryList');
+//     }
+
+//     const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+
+//     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
+
+//     const pagination = {
+//       prev: page > 1 ? `/admin/startDeliverList?page=${page - 1}` : null,
+//       next: page < totalPages ? `/admin/startDeliverList?page=${page + 1}` : null,
+//       current: page,
+//       totalPages: totalPages,
+//     };
+
+//     // console.log(thisUserValidDeliveryList);
+//     return res.status(200).render('admin/startDeliverList', {
+//       thisUserValidDeliveryList,
+//       pagination,
+//       page,
+//       perPage,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//     // req.flash('error', error)
+//     // return res.redirect('somethingWrong');
+//   }
+// }
+
 const startDeliverListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        createdByUser: req.user._id,
+        status: 'Delivery in Progress'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' },
         select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
         populate: {
           path: 'createdByUser',
@@ -1617,23 +1308,15 @@ const startDeliverListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Delivery in Progress') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
-      req.flash('warning', 'Your "Start Delivery List" is empty, go click "Start deliver" at "Delivery List" it will show up here!');
-      return res.status(200).redirect('/admin/deliveryList');
+      req.flash('warning', 'Your "Start Delivery List" is empty, go "Delivery List" and click "Start deliver" it will show up here.');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -1684,9 +1367,26 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
         select: 'username phone email role status'
       });
 
+    const CODPaymentAmount = delivery.logisticsOrder_id.paymentAmount;
+
     if (delivery) {
-      return res.status(200).render('admin/logisticsOrderDetailsAndActions', { delivery })
+      return res.status(200).render('admin/logisticsOrderDetailsAndActions',
+        {
+          delivery
+        });
     }
+    // if (delivery && delivery.logisticsOrder_id.paymentType === 'COD') {
+    //   return res.status(200).render('admin/logisticsOrderDetailsAndActions',
+    //     {
+    //       delivery,
+    //       CODPaymentAmount
+    //     });
+    // } else {
+    //   return res.status(200).render('admin/logisticsOrderDetailsAndActions',
+    //     {
+    //       delivery
+    //     });
+    // }
 
     req.flash('error', 'Something wrong, please try again...');
     return res.status(500).redirect('/admin/startDeliverList');
@@ -1703,9 +1403,15 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     const quantityBasedCommissionForRepeatOrderAmount = 30;
     let totalCurrentLogisticOrderCommissionAmount = 0;
 
+    const deliveryCommissionAmount = 10;
+    let totalCurrentRunnerLogisticOrderCommissionAmount = 0;
+
     let isValid = true;
     const deliveryId = req.params.deliveryId;
-    const { status } = req.body;
+    const {
+      status,
+      receivedPayment
+    } = req.body;
 
     // Handle other updates for the LogisticsOrder (e.g., updating status, description, etc.)
     const allowedStatusValue = [
@@ -1717,6 +1423,11 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     if (!allowedStatusValue.includes(status)) {
       isValid = false;
       req.flash('error', 'Invalid status.');
+    }
+
+    if (receivedPayment && receivedPayment === 'none') {
+      isValid = false;
+      req.flash('error', 'Is "COD" payment type, please make sure you are reciving the payment!');
     }
 
     if (isValid) {
@@ -1738,11 +1449,32 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
         if (status === 'Delivered Successfully') {
           if (updatedStatus.customerType === 'New customer') {
             totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForNewCustomerAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
 
           } else if (updatedStatus.customerType === 'Repeat Order') {
             totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForRepeatOrderAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
           }
 
+          console.log("This is receivedPayment:", receivedPayment);
+
+          if (receivedPayment && (receivedPayment === 'yes' || receivedPayment === 'no')) {
+            const updatedDeliveryReceivedPayment = await DeliveryList.findByIdAndUpdate(
+              deliveryId,
+              {
+                receivedPayment: receivedPayment
+              }
+            );
+
+            await updatedDeliveryReceivedPayment.save();
+          }
+
+          const createDeliveryCommission = new DeliveryCommission({
+            delivery_id: delivery._id,
+            user_id: req.user._id,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentRunnerLogisticOrderCommissionAmount,
+          });
 
           const createQuantityBasedCommission = new QuantityBasedCommission({
             logisticsOrder_id: updatedStatus._id,
@@ -1751,6 +1483,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
             commissionAmount: totalCurrentLogisticOrderCommissionAmount,
           });
 
+          await createDeliveryCommission.save();
           await createQuantityBasedCommission.save();
         }
 
@@ -1767,7 +1500,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
 
     } else {
 
-      req.flash('warning', 'The status field is invalid!');
+      req.flash('warning', 'There are some field is invalid!');
       return res.status(422).redirect('/admin/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
 
     }

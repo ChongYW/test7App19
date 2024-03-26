@@ -13,6 +13,7 @@ const deliveryListSchema = new mongoose.Schema({
         required: true
     },
     deliveredAt: Date,
+    receivedPayment: { type: String }, // Added after
     remark: { type: String }, // Added after
 }, {
     timestamps: true

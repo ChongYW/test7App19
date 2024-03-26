@@ -6,12 +6,13 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, unique: true, required: true },
   email: { type: String, unique: true, required: true },
   role: { type: String, required: true },
+  country: { type: String, required: true },
   status: { type: String, required: true },
-},{
+}, {
   timestamps: true
 });
 
-userSchema.plugin(passportLocalMongoose, { usernameField : 'email' });
+userSchema.plugin(passportLocalMongoose, { usernameField: 'email' });
 
 const User = mongoose.model('User', userSchema);
 
