@@ -78,6 +78,9 @@ app.use(function (err, req, res, next) {
 module.exports = app;
 
 // Stop at:
+// 26/3/2024
+// * Need to add the commission or complete order list for each role.
+
 // 20/3/24:
 // * Front-end add "thirdPartyTrackingCode" field.
 // * Add "thirdPartyTrackingCode" field at `editLogisticsOrder()` function.
@@ -117,16 +120,17 @@ module.exports = app;
 // Reminder / Notes:
 // 1. Remove some function in lower lever role:
 //    * In "Edit Logistics Order" from User B, like "User ID"...
-// 2. Add "Reciver", "Phone" and "PaymentType" field to the "Logistic order" model. DONE
-// 3. Change the "UserB" to "CustomerService" and "UserC" to "Runner". DONE
+// 2. (Done)Add "Reciver", "Phone" and "PaymentType" field to the "Logistic order" model. DONE
+// 3. (Done)Change the "UserB" to "CustomerService" and "UserC" to "Runner". DONE
 // 4. The `logisticsOrderPendingListPage()` need to change it only show the create by current user "Logistics Order Pending List".
 // 5. `usersLogEntriesListPage()` the "updateData" switch case, it cant search the value inside a obj from a data.
-// 6. The `addToDeliveryList()` need to sperate it from Customer Service role, cause it will use the bug to request the commission.
-// 7. The "Repeat Order" should have the secure check it is really a repeat order, or else the Customer Service can use the leak of logic to cheat. DONE
-// 8. The `editUserQuantityBasedCommissionStatusList()`, it will split the ID when it has 1 Quantity Based Commission and cant update the data. DONE
-// 9. Need to add the opions and logic to let the runner user or the customer service collect the payment. Done
-// 10. Remove all "Delete" function, replace with "Hide", to avoid unnecessary chain bug. Done
-// 11. Add "trackingCode" at "LogisticsOrder" model for customer track the third party logistic. Done
-// 12. Add "country" at User model to make the commission link to the national currency. Done
-// 13. If is edit own profile will not able to "Hide" it self.
-// 14. Only user with status "Active" are able to login.
+// 6. (Pause)The `addToDeliveryList()` need to sperate it from Customer Service role, cause it will use the bug to request the commission.
+// 7. (Done)The "Repeat Order" should have the secure check it is really a repeat order, or else the Customer Service can use the leak of logic to cheat. DONE
+// 8. (Done)The `editUserQuantityBasedCommissionStatusList()`, it will split the ID when it has 1 Quantity Based Commission and cant update the data. DONE
+// 9. (Done)Need to add the opions and logic to let the runner user or the customer service collect the payment. Done
+// 10. (Done)Remove all "Delete" function, replace with "Hide", to avoid unnecessary chain bug. Done
+// 11. (Done)Add "trackingCode" at "LogisticsOrder" model for customer track the third party logistic. Done
+// 12. (Done)Add "country" at User model to make the commission link to the national currency. Done
+// 13. (Pause)If is edit own profile will not able to "Hide" it self.
+// 14. (Done)Only user with status "active" are able to login. Done
+// 15. (Done)Add a "completed" order or commission list for specific user role, example like commission list for CS and runner.

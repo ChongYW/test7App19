@@ -1022,7 +1022,7 @@ const deliveryListPage = async (req, res) => {
 
     const logisticsOrders = await LogisticsOrder
       .find({
-        createdByUser: req.user._id,
+        // createdByUser: req.user._id,
         status: 'Added to Delivery List'
       });
 
@@ -1277,7 +1277,6 @@ const startDeliverListPage = async (req, res) => {
 
     const logisticsOrders = await LogisticsOrder
       .find({
-        createdByUser: req.user._id,
         status: 'Delivery in Progress'
       });
 

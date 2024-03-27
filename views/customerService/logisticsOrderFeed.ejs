@@ -22,20 +22,7 @@
         <div class="input-group">
           <label for="search" class="visually-hidden">Search:</label>
           <input type="text" id="search" name="search" class="form-control" placeholder="Search..." value="<%= searchQuery || '' %>">
-          
-          <label for="searchStatusField" class="visually-hidden">Status:</label>
-          <select id="searchStatusField" name="searchStatusField" class="form-select">
-              <option value="Draft Order" <%= searchStatusField === 'Draft Order' ? 'selected' : '' %>>Draft Order</option>
-              <option value="Order Posted to Feed" <%= searchStatusField === 'Order Posted to Feed' ? 'selected' : '' %>>Order Posted to Feed</option>
-              <option value="Added to Delivery List" <%= searchStatusField === 'Added to Delivery List' ? 'selected' : '' %>>Added to Delivery List</option>
-              <option value="Delivery in Progress" <%= searchStatusField === 'Delivery in Progress' ? 'selected' : '' %>>Delivery in Progress</option>
-              <option value="Delivered Successfully" <%= searchStatusField === 'Delivered Successfully' ? 'selected' : '' %>>Delivered Successfully</option>
-              <option value="Returning" <%= searchStatusField === 'Returning' ? 'selected' : '' %>>Returning</option>
-              <option value="Returned" <%= searchStatusField === 'Returned' ? 'selected' : '' %>>Returned</option>
-              <option value="Delivery Attempted" <%= searchStatusField === 'Delivery Attempted' ? 'selected' : '' %>>Delivery Attempted</option>
-              <option value="Cancel Delivery" <%= searchStatusField === 'Cancel Delivery' ? 'selected' : '' %>>Cancel Delivery</option>
-          </select>
-      
+                
           <label for="searchField" class="visually-hidden">Search By:</label>
           <select id="searchField" name="searchField" class="form-select">
               <option value="_id" <%= searchField === '_id' ? 'selected' : '' %>>Logistics Order ID</option>
@@ -50,6 +37,7 @@
               <option value="address.city" <%= searchField === 'address.city' ? 'selected' : '' %>>City</option>
               <option value="address.postalCode" <%= searchField === 'address.postalCode' ? 'selected' : '' %>>Postal Code</option>
               <option value="address.country" <%= searchField === 'address.country' ? 'selected' : '' %>>Country</option>
+              <option value="productQty" <%= searchField === 'productQty' ? 'selected' : '' %>>Product Quantity</option>
               <option value="paymentStatus" <%= searchField === 'paymentStatus' ? 'selected' : '' %>>Payment Status</option>
               <option value="paymentType" <%= searchField === 'paymentType' ? 'selected' : '' %>>Payment Type</option>
               <option value="paymentAmount" <%= searchField === 'paymentAmount' ? 'selected' : '' %>>Payment Amount</option>
@@ -88,6 +76,7 @@
                         <%= logisticsOrder.address.postalCode %><br>
                         <%= logisticsOrder.address.country %>
                       </p>
+                      <p class="card-text"><strong>Product Quantity: </strong><br><%= logisticsOrder.productQty %></p>
                       <p class="card-text"><strong>Payment Status: </strong><br><%= logisticsOrder.paymentStatus %></p>
                       <p class="card-text"><strong>Payment Type: </strong><br><%= logisticsOrder.paymentType %></p>
                       <p class="card-text"><strong>Payment Amount: </strong><br><%= logisticsOrder.paymentAmount %></p>

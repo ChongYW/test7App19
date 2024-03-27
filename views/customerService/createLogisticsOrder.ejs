@@ -30,8 +30,8 @@
           <div class="mb-3">
             <label for="customerType" class="form-label">Customer Type:</label>
             <select id="customerType" name="customerType" class="form-select">
-                <option value="New customer">New customer</option>
-                <option value="Repeat Order">Repeat Order</option>
+                <option value="New Customer" <%= customerType === 'New Customer' ? 'selected' : '' %>>New Customer</option>
+                <option value="Repeat Order" <%= customerType === 'Repeat Order' ? 'selected' : '' %>>Repeat Order</option>
             </select>
           </div>
 
@@ -42,7 +42,7 @@
 
           <div class="mb-3">
             <label for="customerContact" class="form-label">Customer Contact:</label>
-            <input type="text" class="form-control" id="customerContact" name="customerContact" value="<%= typeof customerContact !== 'undefined' ? customerContact : '' %>" required>
+            <input type="number" class="form-control" id="customerContact" name="customerContact" value="<%= typeof customerContact !== 'undefined' ? customerContact : '' %>" required>
           </div>
         
             <div class="mb-3">
@@ -81,6 +81,11 @@
               <label for="country" class="form-label">Country:</label>
               <input type="text" class="form-control" id="country" name="country" value="<%= typeof country !== 'undefined' ? country : '' %>">
             </div>
+
+            <div class="mb-3">
+              <label for="productQty" class="form-label">Product Quantity:</label>
+              <input type="number" class="form-control" id="productQty" name="productQty" value="<%= typeof productQty !== 'undefined' ? productQty : '' %>" step="0.01" required>
+            </div>
         
             <div class="mb-3">
               <label for="paymentStatus" class="form-label">Payment Status:</label>
@@ -89,12 +94,17 @@
 
             <div class="mb-3">
               <label for="paymentType" class="form-label">Payment Type:</label>
-              <input type="text" class="form-control" id="paymentType" name="paymentType" value="<%= typeof paymentType !== 'undefined' ? paymentType : '' %>" required>
+              <select id="paymentType" name="paymentType" class="form-select">
+                  <option value="Online Transfer" <%= paymentType === 'Online Transfer' ? 'selected' : '' %>>Online Transfer</option>
+                  <option value="COD" <%= paymentType === 'COD' ? 'selected' : '' %>>COD</option>
+                  <option value="KOL" <%= paymentType === 'KOL' ? 'selected' : '' %>>KOL</option>
+                  <option value="Sample" <%= paymentType === 'Sample' ? 'selected' : '' %>>Sample</option>
+              </select>
             </div>
         
             <div class="mb-3">
               <label for="paymentAmount" class="form-label">Payment Amount:</label>
-              <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" step="0.01" required>
+              <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= typeof paymentAmount !== 'undefined' ? paymentAmount : '' %>" step="0.01" required>
             </div>
         
             <div class="mb-3">
@@ -103,11 +113,16 @@
             </div>
 
             <div class="mb-3">
+              <label for="thirdPartyTrackingCode" class="form-label">Third Party Tracking Code:</label>
+              <input type="text" class="form-control" id="thirdPartyTrackingCode" name="thirdPartyTrackingCode" value="<%= typeof thirdPartyTrackingCode !== 'undefined' ? thirdPartyTrackingCode : '' %>" required>
+            </div>
+
+            <div class="mb-3">
               <label for="remark" class="form-label">Remark:</label>
               <textarea class="form-control" id="remark" name="remark"><%= typeof remark !== 'undefined' ? remark : '' %></textarea>
             </div>
         
-            <button type="submit" class="btn btn-primary">Create Order</button>
+            <button type="submit" class="btn btn-primary w-100">Create Order</button>
         </form>
 
     </div>

@@ -25,6 +25,14 @@ const login = (req, res, next) => {
         return next(err);
       }
 
+      // Check user status
+      if (req.user.status !== 'active') {
+        // req.flash('warning', 'Your account is inactive. Please contact your administrator for assistance.');
+        const authenticationError = new Error();
+        authenticationError.status = 403;
+        return next(authenticationError); // Block inactive users here
+      }
+
       if (req.user && req.user.role === 'admin' && req.user.status === 'active') {
         return res.redirect('/admin/dashboard');
       } else if (req.user && req.user.role === 'customerService' && req.user.status === 'active') {
@@ -32,7 +40,6 @@ const login = (req, res, next) => {
       } else if (req.user && req.user.role === 'runner' && req.user.status === 'active') {
         return res.redirect('/runner/dashboard');
       } else {
-        req.flash('warnning', 'Something wrong about your account, please contact your administrator for assistance.');
         const authenticationError = new Error();
         authenticationError.status = 401;
         next(authenticationError);

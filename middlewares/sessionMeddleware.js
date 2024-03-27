@@ -5,7 +5,8 @@ module.exports = session({
     resave: false,
     saveUninitialized: false,
     // cookie: {
-    //     maxAge: 
+    maxAge:
+        3600000 // 1 hour
     //     //600000 // 10 minute
     //     // 300000 // 5 minute
     //     // 100000 // 1 minute

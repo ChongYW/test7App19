@@ -29,7 +29,7 @@
                       <h5 class="card-title"><strong>Delivery List <%= (page - 1) * perPage + index + 1 %></strong></h5>
                       <hr>
                       <p class="card-text"><strong>Order ID: </strong><br><%= delivery.logisticsOrder_id._id %></p>
-                      <p class="card-text"><strong>Created By User: </strong><br><%= delivery.user_id.username %></p>
+                      <p class="card-text"><strong>Created By User: </strong><br><%= delivery.logisticsOrder_id.createdByUser.username %></p>
                       <p class="card-text"><strong>Status: </strong><br><%= delivery.logisticsOrder_id.status %>(Your)</p>
                       <p class="card-text"><strong>Description: </strong><br><%= delivery.logisticsOrder_id.description %></p>
                       <p class="card-text"><strong>Customer Type: </strong><br><%= delivery.logisticsOrder_id.customerType %></p>
@@ -43,6 +43,7 @@
                         <%= delivery.logisticsOrder_id.address.postalCode %><br>
                         <%= delivery.logisticsOrder_id.address.country %>
                       </p>
+                      <p class="card-text"><strong>Product Quantity: </strong><br><%= delivery.logisticsOrder_id.productQty %></p>
                       <p class="card-text"><strong>Payment Status: </strong><br><%= delivery.logisticsOrder_id.paymentStatus %></p>
                       <p class="card-text"><strong>Payment Type: </strong><br><%= delivery.logisticsOrder_id.paymentType %></p>
                       <p class="card-text"><strong>Payment Amount: </strong><br><%= delivery.logisticsOrder_id.paymentAmount %></p>
@@ -60,25 +61,23 @@
         <% }); %>
       </div>
 
-    <!-- Pagination links -->
-    <div class="d-flex justify-content-between m-3">
-      <% if (pagination.prev) { %>
-        <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
-      <% } %>
-
-      <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
-
-      <% if (pagination.next) { %>
-        <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
-      <% } %>
-    </div>
+      <div class="container">
+        <!-- Pagination links -->
+        <div class="d-flex justify-content-between mt-3">
+          <% if (pagination.prev) { %>
+            <a href="<%= pagination.prev %>" class="btn btn-primary">Previous</a>
+          <% } %>
+  
+          <span>Page <%= pagination.current %> of <%= pagination.totalPages %></span>
+  
+          <% if (pagination.next) { %>
+            <a href="<%= pagination.next %>" class="btn btn-primary">Next</a>
+          <% } %>
+        </div>
+      </div>
 
     <% if (thisUserValidDeliveryList.length >= 1) { %>
       <div class="row p-5 sticky-bottom">
-        <!-- <div class="d-grid p-5 sticky-bottom">
-          <form action="/runner/deliveryList/deliveryDetails/startDeliver" method="put">
-            <a class="btn btn-primary btn-lg"><button type="submit">Start deliver</button></a>
-          </form> -->
           
           <form class="col-12 mb-2" method="post" action="/runner/deliveryList/deliveryDetails/startDeliver"
           onsubmit="return confirm('Start the deliver mode?');">

@@ -5,11 +5,18 @@ const logisticsOrderController = require('../../controllers/admin/logisticsOrder
 const commissionController = require('../../controllers/admin/commissionController');
 const authenticationMiddleware = require('../../middlewares/authenticationMiddleware');
 
+// dashboard.ejs
 route.get('/dashboard', authenticationMiddleware.ensureAuthenticated, adminController.dashboardPage);
 
 // profile.ejs
 route.get('/profile', authenticationMiddleware.ensureAuthenticated, adminController.profilePage);
 route.post('/profile/updateProfile', authenticationMiddleware.ensureAuthenticated, adminController.updateProfile);
+
+// quantityBasedCommissionHistoryList.ejs
+route.get('/quantityBasedCommissionHistoryList', authenticationMiddleware.ensureAuthenticated, commissionController.quantityBasedCommissionHistoryListPage)
+
+// deliveryCommissionListHistory.ejs
+route.get('/deliveryCommissionHistoryList', authenticationMiddleware.ensureAuthenticated, commissionController.deliveryCommissionListHistoryPage)
 
 // createUser.ejs
 route.get('/createUser', authenticationMiddleware.ensureAuthenticated, adminController.createUserPage);

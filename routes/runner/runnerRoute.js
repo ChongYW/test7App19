@@ -2,13 +2,18 @@ const express = require('express');
 const route = express.Router();
 const runnerController = require('../../controllers/runner/runnerController');
 const logisticsOrderController = require('../../controllers/runner/logisticsOrderController');
+const commissionController = require('../../controllers/runner/commissionController');
 const authenticationMiddleware = require('../../middlewares/authenticationMiddleware');
 
+// dashboard.ejs
 route.get('/dashboard', authenticationMiddleware.ensureAuthenticated, runnerController.dashboardPage);
 
 // profile.ejs
 route.get('/profile', authenticationMiddleware.ensureAuthenticated, runnerController.profilePage);
 route.post('/profile/updateProfile', authenticationMiddleware.ensureAuthenticated, runnerController.updateProfile);
+
+// deliveryCommissionListHistory.ejs
+route.get('/deliveryCommissionHistoryList', authenticationMiddleware.ensureAuthenticated, commissionController.deliveryCommissionListHistoryPage)
 
 // logisticsOrderFeed.ejs
 route.get('/logisticsOrderFeed', authenticationMiddleware.ensureAuthenticated, logisticsOrderController.logisticsOrderFeedPage);

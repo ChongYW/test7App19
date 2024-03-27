@@ -31,10 +31,9 @@
         </div>
         
         <div class="mb-3">
-          <label for="createdByUser" class="form-label">Created By User:</label>
+          <label for="createdByUser" class="form-label">Created By User(Can't edit):</label>
           <div class="input-group">
-            <input type="text" class="form-control" id="createdByUser" name="createdByUser" placeholder="<%= createdByUserDetails._id %> ( <%= createdByUserDetails.username %> )">
-            <!-- <button class="btn btn-outline-secondary copyButton" id="copyCreatedByUser" data-clipboard-target="#createdByUser">Copy User ID</button> -->
+            <input type="text" class="form-control" id="createdByUser" name="createdByUser" value="<%= createdByUserDetails._id %> ( <%= createdByUserDetails.username %> )" readonly>
           </div>
         </div>
         
@@ -42,13 +41,10 @@
           <label for="addToDeliveryListId" class="form-label">Added to the delivery list by User:</label>
           <div class="input-group">
             <input type="text" class="form-control" id="addToDeliveryListId" name="addToDeliveryListId" placeholder="<%= deliveryUserDetails._id %> ( <%= deliveryUserDetails.username %> )">
-            <!-- <button class="btn btn-outline-secondary copyButton" id="copyAddToDeliveryListId" data-clipboard-target="#addToDeliveryListId">Copy User ID</button> -->
           </div>
         </div>
 
         <div class="mb-3">
-          <!-- <label for="status" class="form-label">Status:</label>
-          <input type="text" class="form-control" id="status" name="status" value="<%= logisticsOrder.status %>" required> -->
 
           <label for="status" class="form-label">Status:</label>
           <select id="status" name="status" class="form-select">
@@ -70,21 +66,18 @@
         </div>
 
         <div class="mb-3">
-          <label for="customerType" class="form-label">Customer Type:</label>
-          <select id="customerType" name="customerType" class="form-select">
-              <option value="New customer" <%= logisticsOrder.customerType === 'New customer' ? 'selected' : '' %>>New customer</option>
-              <option value="Repeat Order" <%= logisticsOrder.customerType === 'Repeat Order' ? 'selected' : '' %>>Repeat Order</option>
-          </select>
+          <label for="customerType" class="form-label">Customer Type(Can't edit):</label>
+          <input class="form-control" id="customerType" name="customerType" value="<%= logisticsOrder.customerType %>" readonly>
         </div>
 
         <div class="mb-3">
-          <label for="customerName" class="form-label">Customer Name:</label>
-          <input class="form-control" id="customerName" name="customerName" value="<%= logisticsOrder.customerName %>" required>
+          <label for="customerName" class="form-label">Customer Name(Can't edit):</label>
+          <input class="form-control" id="customerName" name="customerName" value="<%= logisticsOrder.customerName %>" readonly>
         </div>
 
         <div class="mb-3">
-          <label for="customerContact" class="form-label">Customer Contact:</label>
-          <input class="form-control" id="customerContact" name="customerContact" value="<%= logisticsOrder.customerContact %>" required>
+          <label for="customerContact" class="form-label">Customer Contact(Can't edit):</label>
+          <input class="form-control" id="customerContact" name="customerContact" value="<%= logisticsOrder.customerContact %>" readonly>
         </div>
 
         <div class="mb-3">
@@ -113,6 +106,11 @@
         </div>
 
         <div class="mb-3">
+          <label for="productQty" class="form-label">Product Quantity:</label>
+          <input type="number" class="form-control" id="productQty" name="productQty" value="<%= logisticsOrder.productQty %>" step="0.01" required>
+        </div>
+
+        <div class="mb-3">
           <label for="paymentStatus" class="form-label">Payment Status:</label>
           <input type="text" class="form-control" id="paymentStatus" name="paymentStatus" value="<%= logisticsOrder.paymentStatus %>" required>
         </div>
@@ -124,8 +122,8 @@
 
         <div class="mb-3">
           <label for="paymentAmount" class="form-label">Payment Amount:</label>
-          <input type="text" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
-      </div>
+          <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" value="<%= logisticsOrder.paymentAmount %>" step="0.01" required>
+        </div>
 
         <div class="mb-3">
           <label for="deliveryType" class="form-label">Delivery Type:</label>
@@ -133,29 +131,25 @@
         </div>
 
         <div class="mb-3">
+          <label for="thirdPartyTrackingCode" class="form-label">Third Party Tracking Code:</label>
+          <input type="text" class="form-control" id="thirdPartyTrackingCode" name="thirdPartyTrackingCode" value="<%= logisticsOrder.thirdPartyTrackingCode %>" required>
+        </div>
+
+        <div class="mb-3">
           <label for="remark" class="form-label">Remark:</label>
           <textarea class="form-control" id="remark" name="remark"><%= logisticsOrder.remark %></textarea>
         </div>
 
-        <div class="row p-3">
+        <!-- <div class="row mb-3"> -->
           <button type="submit" class="btn btn-primary w-100">Save Changes</button>
-        </div>
+        <!-- </div> -->
         
       </form>
 
-      <div class="row p-3">
-        <div class="col-md-6 mb-2">
-          <a href="javascript:history.back()" class="w-100">
+      <div class="mt-3">
+          <a href="javascript:history.back()">
             <button class="btn btn-secondary w-100">Back</button>
           </a>
-        </div>
-
-        <form class="col-md-6 mb-2" method="post" action="/customerService/logisticsOrderList/edit/delete/<%= logisticsOrder._id %>"
-          onsubmit="return confirm('Are you sure you want to delete this logistics order?');">
-          <a href="#" class="w-100">
-            <button class="btn btn-danger w-100" type="submit">Delete Logistics Order</button>
-          </a>
-        </form>
     </div>   
 
     </div>

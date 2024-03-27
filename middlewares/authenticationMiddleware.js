@@ -44,8 +44,12 @@ const isRole = (role) => (req, res, next) => {
 
 // // Middleware to check if user is authenticated
 // const ensureAuthenticated = (req, res, next) => {
-//   if (req.isAuthenticated()) {
+//   if (req.isAuthenticated() && req.user.status === 'active') {
 //     return next();
+//   } else if (req.isAuthenticated() && req.user.status !== 'active') {
+//     const authenticationError = new Error();
+//     authenticationError.status = 403;
+//     next(authenticationError);
 //   }
 
 //   const authenticationError = new Error();
@@ -64,8 +68,8 @@ const isRole = (role) => (req, res, next) => {
 //   next(authenticationError);
 // };
 
-// const isRole = (role) => (req, res, next) =>{
-//   if(req.isAuthenticated() && req.user.role === role){
+// const isRole = (role) => (req, res, next) => {
+//   if (req.isAuthenticated() && req.user.role === role) {
 //     return next();
 //   }
 
@@ -73,6 +77,8 @@ const isRole = (role) => (req, res, next) => {
 //   authenticationError.status = 403;
 //   next(authenticationError);
 // }
+
+// debug---
 
 const isAdmin = isRole('admin');
 const isCustomerService = isRole('customerService');

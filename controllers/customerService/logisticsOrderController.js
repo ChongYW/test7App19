@@ -1,14 +1,26 @@
 const LogisticsOrder = require('../../models/logisticsOrderModel');
 const User = require('../../models/userModel');
-const DeliveryList = require('../../models/deliveryListModel')
+const DeliveryList = require('../../models/deliveryListModel');
+const QuantityBasedCommission = require('../../models/quantityBasedCommissionModel');
+const DeliveryCommission = require('../../models/deliveryCommissionModel');
 const validator = require('validator');
 const paginate = require('express-paginate');
 const mongoose = require('mongoose');
 
 const createLogisticsOrderPage = (req, res) => {
-  res.render('customerService/createLogisticsOrder');
+
+  const customerType = "New Customer";
+  const paymentType = "Online Transfer";
+
+  res.status(200).render('customerService/createLogisticsOrder',
+    {
+      customerType,
+      paymentType
+    }
+  );
 };
 
+// Need to change it only show the create by current user "Logistics Order Pending List".
 const createLogisticsOrder = async (req, res) => {
   // Extract address details
   const {
@@ -18,10 +30,12 @@ const createLogisticsOrder = async (req, res) => {
     customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   } = req.body;
 
@@ -35,9 +49,41 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'If you choose "Allow empty address", description must be filled in.');
       }
 
-      if (!customerType.trim()) {
+      const allowedCustomerTypeValue = [
+        'New Customer',
+        'Repeat Order',
+      ];
+      if (!allowedCustomerTypeValue.includes(customerType)) {
         isValid = false;
-        req.flash('error', 'Customer Type must be filled in.');
+        req.flash('error', 'Invalid Customer Type.');
+      }
+      if (customerType === "Repeat Order") {
+        const existCustomer = await LogisticsOrder.find({
+          createdByUser: req.user._id,
+          customerName: customerName,
+          customerContact: customerContact
+        });
+
+        if (existCustomer.length > 0) {
+          isValid = true;
+        } else {
+          isValid = false;
+          req.flash('error', 'No repeat customer found, "Customer Name" and "Customer Contact" must exist.');
+        }
+      } else {
+        if (customerContact.length < 11 || customerContact.length > 12 || !validator.isMobilePhone(customerContact, 'any', { strictMode: false })) {
+          isValid = false;
+          req.flash('error', 'Invalid phone number.');
+        }
+
+        const existCustomerContact = await LogisticsOrder.find({
+          customerContact: customerContact,
+        });
+
+        if (existCustomerContact.length > 0) {
+          isValid = false;
+          req.flash('error', 'Customer Contact exist.');
+        }
       }
 
       if (!customerName.trim()) {
@@ -45,9 +91,9 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Customer Name must be filled in.');
       }
 
-      if (!customerContact.trim()) {
+      if (!productQty.trim()) {
         isValid = false;
-        req.flash('error', 'Customer Contact must be filled in.');
+        req.flash('error', 'Product Quantity must be filled in.');
       }
 
       if (!paymentStatus.trim()) {
@@ -55,9 +101,15 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Payment Status must be filled in.');
       }
 
-      if (!paymentType.trim()) {
+      const allowedPaymentTypeValue = [
+        'Online Transfer',
+        'COD',
+        'KOL',
+        'Sample',
+      ];
+      if (!allowedPaymentTypeValue.includes(paymentType)) {
         isValid = false;
-        req.flash('error', 'Payment Type must be filled in.');
+        req.flash('error', 'Invalid Payment Type.');
       }
 
       if (!paymentAmount.trim()) {
@@ -68,6 +120,14 @@ const createLogisticsOrder = async (req, res) => {
       if (!deliveryType.trim()) {
         isValid = false;
         req.flash('error', 'Delivery Type must be filled in.');
+      }
+
+      if (!thirdPartyTrackingCode.trim()) {
+        thirdPartyTrackingCode = '-';
+      }
+
+      if (!remark.trim()) {
+        remark = '-';
       }
 
       if (isValid) {
@@ -85,16 +145,22 @@ const createLogisticsOrder = async (req, res) => {
             postalCode: '-',
             country: '-'
           },
+          productQty: productQty,
           paymentStatus: paymentStatus,
           paymentType: paymentType,
           paymentAmount: paymentAmount,
           deliveryType: deliveryType,
+          thirdPartyTrackingCode: thirdPartyTrackingCode,
           remark
         });
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.render('customerService/createLogisticsOrder');
+        return res.status(201).render('customerService/createLogisticsOrder',
+          {
+            customerType,
+            paymentType,
+          });
       }
     } else if (allowEmptyAddress === 'yes' || !address1.trim() || !address2.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
       req.flash('warning', 'Please make sure all address related fields are empty if you choose "Without Address"!');
@@ -102,19 +168,46 @@ const createLogisticsOrder = async (req, res) => {
       // If the user does not choose "Allow empty address"
       let isValid = true;
 
-      if (!customerType.trim()) {
+      const allowedCustomerTypeValue = [
+        'New Customer',
+        'Repeat Order',
+      ];
+      if (!allowedCustomerTypeValue.includes(customerType)) {
         isValid = false;
-        req.flash('error', 'Customer Type must be filled in.');
+        req.flash('error', 'Invalid Customer Type.');
+      }
+      if (customerType === "Repeat Order") {
+        const existCustomer = await LogisticsOrder.find({
+          createdByUser: req.user._id,
+          customerName: customerName,
+          customerContact: customerContact
+        });
+
+        if (existCustomer.length > 0) {
+          isValid = true;
+        } else {
+          isValid = false;
+          req.flash('error', 'No repeat customer found, "Customer Name" and "Customer Contact" must exist.');
+        }
+      } else {
+        if (customerContact.length < 11 || customerContact.length > 12 || !validator.isMobilePhone(customerContact, 'any', { strictMode: false })) {
+          isValid = false;
+          req.flash('error', 'Invalid phone number.');
+        }
+
+        const existCustomerContact = await LogisticsOrder.find({
+          customerContact: customerContact,
+        });
+
+        if (existCustomerContact.length > 0) {
+          isValid = false;
+          req.flash('error', 'Customer Contact exist.');
+        }
       }
 
       if (!customerName.trim()) {
         isValid = false;
         req.flash('error', 'Customer Name must be filled in.');
-      }
-
-      if (!customerContact.trim()) {
-        isValid = false;
-        req.flash('error', 'Customer Contact must be filled in.');
       }
 
       if (!address1.trim()) {
@@ -137,6 +230,11 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Country must be filled in.');
       }
 
+      if (!productQty.trim()) {
+        isValid = false;
+        req.flash('error', 'Product Quantity must be filled in.');
+      }
+
       if (!paymentStatus.trim()) {
         isValid = false;
         req.flash('error', 'Payment Status must be filled in.');
@@ -157,6 +255,14 @@ const createLogisticsOrder = async (req, res) => {
         req.flash('error', 'Delivery Type must be filled in.');
       }
 
+      if (!thirdPartyTrackingCode.trim()) {
+        thirdPartyTrackingCode = '-';
+      }
+
+      if (!remark.trim()) {
+        remark = '-';
+      }
+
       if (isValid) {
         // Create a new LogisticsOrder document
         const logisticsOrder = new LogisticsOrder({
@@ -173,16 +279,22 @@ const createLogisticsOrder = async (req, res) => {
             postalCode,
             country
           },
+          productQty,
           paymentStatus,
           paymentType,
           paymentAmount,
           deliveryType,
+          thirdPartyTrackingCode,
           remark
         });
 
         await logisticsOrder.save();
         req.flash('success', 'Logistics Order created successfully!');
-        return res.render('customerService/createLogisticsOrder');
+        return res.status(201).render('customerService/createLogisticsOrder',
+          {
+            customerType,
+            paymentType,
+          });
       }
     }
   } catch (error) {
@@ -190,22 +302,23 @@ const createLogisticsOrder = async (req, res) => {
     req.flash('error', error.message);
   }
 
-  return res.render('customerService/createLogisticsOrder', {
+  return res.status(422).render('customerService/createLogisticsOrder', {
     description,
     customerType,
     customerName,
     customerContact,
     allowEmptyAddress,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   });
 };
 
-// Need to change it only show the create by current user "Logistics Order Pending List".
 const logisticsOrderPendingListPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -235,20 +348,20 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.redirect('/customerService/logisticsOrderPendingList');
+            return res.status(422).render('customerService/logisticsOrderPendingList');
           }
 
-          query = { ...query, paymentAmount: paymentAmount };
+          query = { paymentAmount: paymentAmount };
           break;
 
         case '_id':
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
+            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.redirect('/customerService/logisticsOrderPendingList');
+            return res.status(200).redirect('/customerService/logisticsOrderPendingList');
           }
           break;
 
@@ -262,11 +375,12 @@ const logisticsOrderPendingListPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
         case 'remark':
-          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
         case 'updatedAt':
@@ -275,7 +389,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.redirect('/customerService/logisticsOrderPendingList');
+            return res.status(200).redirect('/customerService/logisticsOrderPendingList');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -286,7 +400,7 @@ const logisticsOrderPendingListPage = async (req, res) => {
           break;
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.redirect('/customerService/logisticsOrderPendingList');
+          return res.status(200).redirect('/customerService/logisticsOrderPendingList');
       }
     }
 
@@ -303,9 +417,11 @@ const logisticsOrderPendingListPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No "${searchStatusField}" order status yet...`);
     }
 
-    res.render('customerService/logisticsOrderPendingList', {
+    return res.status(200).render('customerService/logisticsOrderPendingList', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -342,20 +458,20 @@ const logisticsOrderListPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.redirect('/customerService/logisticsOrderList');
+            return res.status(200).redirect('/customerService/logisticsOrderList');
           }
 
-          query = { ...query, paymentAmount: paymentAmount };
+          query = { paymentAmount: paymentAmount };
           break;
 
         case '_id':
         case 'createdByUser':
           // Check if the entered value is a valid ObjectId
           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-            query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
+            query = { [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.redirect('/customerService/logisticsOrderList');
+            return res.status(200).redirect('/customerService/logisticsOrderList');
           }
           break;
 
@@ -369,11 +485,12 @@ const logisticsOrderListPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
         case 'remark':
-          query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
+          query = { [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
           break;
         case 'createdAt':
         case 'updatedAt':
@@ -382,7 +499,7 @@ const logisticsOrderListPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.redirect('/customerService/logisticsOrderList');
+            return res.status(200).redirect('/customerService/logisticsOrderList');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -391,13 +508,15 @@ const logisticsOrderListPage = async (req, res) => {
 
           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
           break;
+
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.redirect('/customerService/logisticsOrderList');
+          return res.status(200).redirect('/customerService/logisticsOrderList');
       }
     }
 
-    const logisticsOrders = await LogisticsOrder.find(query)
+    const logisticsOrders = await LogisticsOrder
+      .find(query)
       .sort({ createdAt: -1 })  // Sort by createdAt in descending order (newest first)
       .skip(skip)
       .limit(perPage);
@@ -413,9 +532,11 @@ const logisticsOrderListPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No Logistics Orders yet...`);
     }
 
-    res.render('customerService/logisticsOrderList', {
+    return res.status(200).render('customerService/logisticsOrderList', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -439,15 +560,13 @@ const editLogisticsOrderPage = async (req, res) => {
     const logisticsOrderId = req.params.logisticsOrderId;
     const logisticsOrder = await LogisticsOrder
       .findById(logisticsOrderId)
-      .where({
-        createdByUser: req.user._id,
-      })
+      .where('createdByUser').equals(req.user._id)
       .populate('createdByUser');
 
     if (!logisticsOrder) {
 
       req.flash('error', 'Logistics Order not found!');
-      return res.redirect('/customerService/logisticsOrderList');
+      return res.status(422).redirect('/customerService/logisticsOrderList');
 
     }
 
@@ -478,7 +597,7 @@ const editLogisticsOrderPage = async (req, res) => {
 
     // console.log(deliveryUserDetails._id);
     // console.log(deliveryUserDetails.username);
-    res.render('customerService/editLogisticsOrder', {
+    res.status(200).render('customerService/editLogisticsOrder', {
       logisticsOrder,
       createdByUserDetails,
       deliveryUserDetails,
@@ -503,21 +622,28 @@ const editLogisticsOrder = async (req, res) => {
     customerName,
     customerContact,
     address1, address2, city, postalCode, country,
+    productQty,
     paymentStatus,
     paymentType,
     paymentAmount,
     deliveryType,
+    thirdPartyTrackingCode,
     remark
   } = req.body;
 
   try {
     // Check if the LogisticsOrder exists
-    const logisticsOrder = await LogisticsOrder.findById(logisticsOrderId);
+    const logisticsOrder = await LogisticsOrder
+      .find({
+        _id: logisticsOrderId,
+        createdByUser: req.user._id,
+      });
+
     if (!logisticsOrder) {
-      console.log('LogisticsOrder not found');
+      // console.log('LogisticsOrder not found');
       // Handle the case where LogisticsOrder is not found, e.g., return an error response
       req.flash('error', 'Logistics Order is not found, please try agian...');
-      return res.redirect('/customerService/logisticsOrderList');
+      return res.status(422).redirect('/customerService/logisticsOrderList');
     }
 
     if (createdByUser && mongoose.Types.ObjectId.isValid(createdByUser) && createdByUser.trim()) {
@@ -576,6 +702,7 @@ const editLogisticsOrder = async (req, res) => {
       } else {
 
         req.flash('error', `User ID with "${addToDeliveryListId}" from "Added to the delivery list by User:" is not found!`);
+        return res.status(201).redirect(`/customerService/logisticsOrderList/edit/${logisticsOrderId}`);
       }
 
     }
@@ -608,48 +735,26 @@ const editLogisticsOrder = async (req, res) => {
             customerName,
             customerContact,
             address1, address2, city, postalCode, country,
+            productQty,
             paymentStatus,
             paymentType,
             paymentAmount,
             deliveryType,
+            thirdPartyTrackingCode,
             remark
           }
         );
 
         req.flash('success', 'Logistics order updated successfully!');
-        return res.redirect('/customerService/logisticsOrderList');
+        return res.status(201).redirect('/customerService/logisticsOrderList');
 
       } catch (error) {
         console.error(error);
-        req.flash('error', 'Error saving logistics order.');
-        return res.render('customerService/editLogisticsOrder', {
-          logisticsOrder: {
-            _id: logisticsOrder,
-            createdByUser,
-            addToDeliveryListId,
-            status,
-            description,
-            customerType,
-            customerName,
-            customerContact,
-            address: {
-              address1,
-              address2,
-              city,
-              postalCode,
-              country
-            },
-            paymentStatus,
-            paymentType,
-            paymentAmount,
-            deliveryType,
-            remark
-          }
-        })
+        res.status(500).send('Internal Server Error');
       }
     } else {
       // Render the edit form with the input values if there's an issue
-      return res.render('customerService/editLogisticsOrder', {
+      return res.status(422).render('customerService/editLogisticsOrder', {
         logisticsOrder: {
           _id: logisticsOrder,
           createdByUser,
@@ -666,10 +771,12 @@ const editLogisticsOrder = async (req, res) => {
             postalCode,
             country
           },
+          productQty,
           paymentStatus,
           paymentType,
           paymentAmount,
           deliveryType,
+          thirdPartyTrackingCode,
           remark
         }
       })
@@ -683,6 +790,22 @@ const editLogisticsOrder = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// const deleteEditLogisticsOrder = async (req, res) => {
+//   try {
+//     const orderId = req.params.logisticsOrderId;
+//     // Remove user from the database
+//     await LogisticsOrder.findByIdAndUpdate(orderId, {
+//       status: 'hide'
+//     });
+
+//     req.flash('success', 'Logistics Order delete successfully!')
+//     res.status(201).redirect('/customerService/logisticsOrderList');
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
 
 const logisticsOrderFeedPage = async (req, res) => {
   try {
@@ -726,7 +849,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.redirect('/customerService/logisticsOrderList');
+            return res.status(200).redirect('/customerService/logisticsOrderList');
           }
 
           query = { ...query, paymentAmount: paymentAmount };
@@ -738,7 +861,7 @@ const logisticsOrderFeedPage = async (req, res) => {
             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.redirect('/customerService/logisticsOrderFeed');
+            return res.status(200).redirect('/customerService/logisticsOrderFeed');
           }
           break;
 
@@ -754,7 +877,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
             if (userIds.length === 0) {
               req.flash('warning', `No user found with the username "${searchQuery}".`);
-              return res.redirect('/customerService/logisticsOrderFeed');
+              return res.status(200).redirect('/customerService/logisticsOrderFeed');
             }
 
             query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
@@ -772,6 +895,7 @@ const logisticsOrderFeedPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
@@ -786,7 +910,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.redirect('/customerService/logisticsOrderFeed');
+            return res.status(200).redirect('/customerService/logisticsOrderFeed');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -802,11 +926,12 @@ const logisticsOrderFeedPage = async (req, res) => {
 
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.redirect('/customerService/logisticsOrderFeed');
+          return res.status(200).redirect('/customerService/logisticsOrderFeed');
       }
     }
 
-    const logisticsOrders = await LogisticsOrder.find(query)
+    const logisticsOrders = await LogisticsOrder
+      .find(query)
       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
       .skip(skip)
@@ -824,9 +949,11 @@ const logisticsOrderFeedPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No order feeds yet...`);
     }
 
-    res.render('customerService/logisticsOrderFeed', {
+    res.status(200).render('customerService/logisticsOrderFeed', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -849,11 +976,11 @@ const logisticsOrderDetailsPage = async (req, res) => {
       .populate('createdByUser', 'username');
 
     if (logisticsOrder) {
-      return res.render('customerService/logisticsOrderDetails', { logisticsOrder })
+      return res.status(200).render('customerService/logisticsOrderDetails', { logisticsOrder })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return res.redirect('/customerService/logisticsOrderFeed');
+    return res.status(422).redirect('/customerService/logisticsOrderFeed');
 
   } catch (error) {
     console.error(error);
@@ -889,12 +1016,13 @@ const addToDeliveryList = async (req, res) => {
       req.flash('error', 'The logistics order is not found, try another.');
     }
 
-    res.redirect('/customerService/logisticsOrderFeed');
+    res.status(201).redirect('/customerService/logisticsOrderFeed');
 
   } catch (error) {
-    req.flash('error', error)
+    // req.flash('error', error)
     console.error(error);
-    res.status(500).render('somethingWrong');
+    // res.status(500).render('somethingWrong');
+    res.status(500).send('Internal Server Error');
   }
 };
 
@@ -904,14 +1032,30 @@ const deliveryListPage = async (req, res) => {
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        // createdByUser: req.user._id,
+        status: 'Added to Delivery List'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -921,22 +1065,15 @@ const deliveryListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -947,8 +1084,7 @@ const deliveryListPage = async (req, res) => {
       totalPages: totalPages,
     };
 
-    // console.log(thisUserValidDeliveryList);
-    res.render('customerService/deliveryList', {
+    res.status(200).render('customerService/deliveryList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -958,8 +1094,6 @@ const deliveryListPage = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
-    // req.flash('error', error)
-    // return res.redirect('somethingWrong');
   }
 };
 
@@ -973,8 +1107,13 @@ const deliveryDetailsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Added to Delivery List' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -983,11 +1122,11 @@ const deliveryDetailsPage = async (req, res) => {
       });
 
     if (delivery) {
-      return res.render('customerService/deliveryDetails', { delivery })
+      return res.status(200).render('customerService/deliveryDetails', { delivery })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return redirect('/customerService/deliveryList');
+    return res.status(422).redirect('/customerService/deliveryList');
 
   } catch (error) {
     console.error(error);
@@ -1011,7 +1150,7 @@ const removeFromDeliveryList = async (req, res) => {
     await DeliveryList.findByIdAndDelete(delivery._id);
 
     req.flash('success', 'Remove from your "Delivery List" successfully!')
-    res.redirect('/customerService/deliveryList');
+    return res.status(201).redirect('/customerService/deliveryList');
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
@@ -1026,7 +1165,7 @@ const startDeliver = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -1036,7 +1175,7 @@ const startDeliver = async (req, res) => {
 
     if (!thisUserDeliveryList.length) {
       req.flash('warning', 'Your "Start Deliver List" is empty, go add it from "Delivery List" it will show up here!');
-      return res.redirect('/customerService/deliveryList');
+      return res.status(200).redirect('/customerService/deliveryList');
     }
 
     for (let i = 0; i < thisUserDeliveryList.length; i++) {
@@ -1061,7 +1200,7 @@ const startDeliver = async (req, res) => {
 
     // console.log(thisUserValidDeliveryList);
     req.flash('success', 'Delivery mode is started, please ensure the traffic safety of yourself and others. Good luck!');
-    return res.redirect('/customerService/startDeliverList');
+    return res.status(201).redirect('/customerService/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -1077,14 +1216,29 @@ const startDeliverListPage = async (req, res) => {
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        status: 'Delivery in Progress'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1094,23 +1248,15 @@ const startDeliverListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Delivery in Progress') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
-      req.flash('warning', 'Your "Start Delivery List" is empty, go click "Start deliver" at "Delivery List" it will show up here!');
-      return res.redirect('/customerService/deliveryList');
+      req.flash('warning', 'Your "Start Delivery List" is empty, go "Delivery List" and click "Start deliver" it will show up here.');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -1122,7 +1268,7 @@ const startDeliverListPage = async (req, res) => {
     };
 
     // console.log(thisUserValidDeliveryList);
-    return res.render('customerService/startDeliverList', {
+    return res.status(200).render('customerService/startDeliverList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -1147,8 +1293,13 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Delivery in Progress' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -1156,12 +1307,29 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
         select: 'username phone email role status'
       });
 
+    const CODPaymentAmount = delivery.logisticsOrder_id.paymentAmount;
+
     if (delivery) {
-      return res.render('customerService/logisticsOrderDetailsAndActions', { delivery })
+      return res.status(200).render('customerService/logisticsOrderDetailsAndActions',
+        {
+          delivery
+        });
     }
+    // if (delivery && delivery.logisticsOrder_id.paymentType === 'COD') {
+    //   return res.status(200).render('customerService/logisticsOrderDetailsAndActions',
+    //     {
+    //       delivery,
+    //       CODPaymentAmount
+    //     });
+    // } else {
+    //   return res.status(200).render('customerService/logisticsOrderDetailsAndActions',
+    //     {
+    //       delivery
+    //     });
+    // }
 
     req.flash('error', 'Something wrong, please try again...');
-    return redirect('/customerService/startDeliverList');
+    return res.status(500).redirect('/customerService/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -1171,9 +1339,19 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
 
 const logisticsOrderDetailsAndActions = async (req, res) => {
   try {
+    const quantityBasedCommissionForNewCustomerAmount = 20;
+    const quantityBasedCommissionForRepeatOrderAmount = 30;
+    let totalCurrentLogisticOrderCommissionAmount = 0;
+
+    const deliveryCommissionAmount = 10;
+    let totalCurrentRunnerLogisticOrderCommissionAmount = 0;
+
     let isValid = true;
     const deliveryId = req.params.deliveryId;
-    const { status } = req.body;
+    const {
+      status,
+      receivedPayment
+    } = req.body;
 
     // Handle other updates for the LogisticsOrder (e.g., updating status, description, etc.)
     const allowedStatusValue = [
@@ -1185,6 +1363,11 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     if (!allowedStatusValue.includes(status)) {
       isValid = false;
       req.flash('error', 'Invalid status.');
+    }
+
+    if (receivedPayment && receivedPayment === 'none') {
+      isValid = false;
+      req.flash('error', 'Is "COD" payment type, please make sure you are reciving the payment!');
     }
 
     if (isValid) {
@@ -1199,22 +1382,66 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
           delivery.logisticsOrder_id,
           {
             status: status,
-          }
+          },
+          { new: true }
         );
 
+        if (status === 'Delivered Successfully') {
+          if (updatedStatus.customerType === 'New customer') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForNewCustomerAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
+
+          } else if (updatedStatus.customerType === 'Repeat Order') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForRepeatOrderAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
+          }
+
+          console.log("This is receivedPayment:", receivedPayment);
+
+          if (receivedPayment && (receivedPayment === 'yes' || receivedPayment === 'no')) {
+            const updatedDeliveryReceivedPayment = await DeliveryList.findByIdAndUpdate(
+              deliveryId,
+              {
+                receivedPayment: receivedPayment
+              }
+            );
+
+            await updatedDeliveryReceivedPayment.save();
+          }
+
+          const createDeliveryCommission = new DeliveryCommission({
+            delivery_id: delivery._id,
+            user_id: req.user._id,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentRunnerLogisticOrderCommissionAmount,
+          });
+
+          const createQuantityBasedCommission = new QuantityBasedCommission({
+            logisticsOrder_id: updatedStatus._id,
+            user_id: updatedStatus.createdByUser,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentLogisticOrderCommissionAmount,
+          });
+
+          await createDeliveryCommission.save();
+          await createQuantityBasedCommission.save();
+        }
+
+
         await updatedStatus.save();
+
       } else {
 
         req.flash('error', 'Something wrong, please try again later or ask the order creator for help!');
-        return res.redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+        return res.status(500).redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
       };
 
       req.flash('success', 'Updated success!');
 
     } else {
 
-      req.flash('warning', 'The status field is invalid!');
-      return res.redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+      req.flash('warning', 'There are some field is invalid!');
+      return res.status(422).redirect('/customerService/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
 
     }
 
@@ -1223,7 +1450,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 
-  return res.redirect('/customerService/startDeliverList');
+  return res.status(201).redirect('/customerService/startDeliverList');
 }
 
 module.exports = {
@@ -1233,6 +1460,7 @@ module.exports = {
   logisticsOrderListPage,
   editLogisticsOrderPage,
   editLogisticsOrder,
+  // deleteEditLogisticsOrder,
   logisticsOrderFeedPage,
   logisticsOrderDetailsPage,
   addToDeliveryList,

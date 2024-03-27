@@ -1,118 +1,11 @@
 const LogisticsOrder = require('../../models/logisticsOrderModel');
 const User = require('../../models/userModel');
-const DeliveryList = require('../../models/deliveryListModel')
+const DeliveryList = require('../../models/deliveryListModel');
+const QuantityBasedCommission = require('../../models/quantityBasedCommissionModel');
+const DeliveryCommission = require('../../models/deliveryCommissionModel');
 const validator = require('validator');
 const paginate = require('express-paginate');
 const mongoose = require('mongoose');
-
-
-// const logisticsOrderListPage = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const perPage = 10; // Adjust this value based on your preference
-//     const skip = (page - 1) * perPage;
-
-//     let query = {
-//       createdByUser: req.user._id,
-//     };
-//     const searchQuery = req.query.search;
-//     const searchField = req.query.searchField;
-
-//     if (searchQuery && searchField) {
-//       switch (searchField) {
-//         case 'paymentAmount':
-//           // Check if the entered value is a valid number
-//           const paymentAmount = parseFloat(searchQuery);
-
-//           if (isNaN(paymentAmount)) {
-//             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-//             return res.redirect('/runner/logisticsOrderList');
-//           }
-
-//           query = { ...query, paymentAmount: paymentAmount };
-//           break;
-
-//         case '_id':
-//         case 'createdByUser':
-//           // Check if the entered value is a valid ObjectId
-//           if (mongoose.Types.ObjectId.isValid(searchQuery)) {
-//             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery) }; // The `searchField` is need to be same as the DB target search field!
-//           } else {
-//             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-//             return res.redirect('/runner/logisticsOrderList');
-//           }
-//           break;
-
-//         case 'status':
-//         case 'description':
-//         case 'customerType':
-//         case 'customerName':
-//         case 'customerContact':
-//         case 'address.address1':
-//         case 'address.address2':
-//         case 'address.city':
-//         case 'address.postalCode':
-//         case 'address.country':
-//         case 'paymentStatus':
-//         case 'paymentType':
-//         case 'deliveryType':
-//         case 'remark':
-//           query = { ...query, [searchField]: { $regex: new RegExp(searchQuery, 'i') } };
-//           break;
-//         case 'createdAt':
-//         case 'updatedAt':
-//           const dateField = (searchField === 'createdAt') ? 'createdAt' : 'updatedAt';
-//           const startDate = new Date(searchQuery);
-
-//           if (isNaN(startDate.getTime())) {
-//             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-//             return res.redirect('/runner/logisticsOrderList');
-//           }
-
-//           startDate.setHours(0, 0, 0, 0);
-//           const endDate = new Date(startDate);
-//           endDate.setHours(23, 59, 59, 999);
-
-//           query = { ...query, [dateField]: { $gte: startDate, $lte: endDate } };
-//           break;
-//         default:
-//           req.flash('warning', 'Invalid search field.');
-//           return res.redirect('/runner/logisticsOrderList');
-//       }
-//     }
-
-//     const logisticsOrders = await LogisticsOrder.find(query)
-//       .sort({ createdAt: -1 })  // Sort by createdAt in descending order (newest first)
-//       .skip(skip)
-//       .limit(perPage);
-//     const totalLogisticsOrders = await LogisticsOrder.countDocuments(query);
-//     const totalPages = Math.ceil(totalLogisticsOrders / perPage);
-
-//     const pagination = {
-//       prev: page > 1 ? `/runner/logisticsOrderList?page=${page - 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-//       next: page < totalPages ? `/runner/logisticsOrderList?page=${page + 1}&search=${searchQuery || ''}&searchField=${searchField || ''}` : null,
-//       current: page,
-//       totalPages: totalPages,
-//     };
-
-//     if (logisticsOrders.length === 0 && searchQuery) {
-//       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchField}".`);
-//     }
-
-//     res.render('runner/logisticsOrderList', {
-//       logisticsOrders,
-//       pagination,
-//       searchQuery,
-//       searchField,
-//       page,
-//       perPage,
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// };
 
 const logisticsOrderFeedPage = async (req, res) => {
   try {
@@ -156,7 +49,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(paymentAmount)) {
             req.flash('warning', 'Invalid payment amount format. Please enter a valid number.');
-            return res.redirect('/runner/logisticsOrderList');
+            return res.status(200).redirect('/runner/logisticsOrderList');
           }
 
           query = { ...query, paymentAmount: paymentAmount };
@@ -168,7 +61,7 @@ const logisticsOrderFeedPage = async (req, res) => {
             query = { ...query, [searchField]: new mongoose.Types.ObjectId(searchQuery), status: searchStatusField };
           } else {
             req.flash('warning', `Invalid ObjectId format for ${searchField}.`);
-            return res.redirect('/runner/logisticsOrderFeed');
+            return res.status(200).redirect('/runner/logisticsOrderFeed');
           }
           break;
 
@@ -184,7 +77,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
             if (userIds.length === 0) {
               req.flash('warning', `No user found with the username "${searchQuery}".`);
-              return res.redirect('/runner/logisticsOrderFeed');
+              return res.status(200).redirect('/runner/logisticsOrderFeed');
             }
 
             query = { ...query, [searchField]: { $in: userIds }, status: searchStatusField };
@@ -202,6 +95,7 @@ const logisticsOrderFeedPage = async (req, res) => {
         case 'address.city':
         case 'address.postalCode':
         case 'address.country':
+        case 'productQty':
         case 'paymentStatus':
         case 'paymentType':
         case 'deliveryType':
@@ -216,7 +110,7 @@ const logisticsOrderFeedPage = async (req, res) => {
 
           if (isNaN(startDate.getTime())) {
             req.flash('warning', 'Invalid date format, it should be like "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss.sssZ".');
-            return res.redirect('/runner/logisticsOrderFeed');
+            return res.status(200).redirect('/runner/logisticsOrderFeed');
           }
 
           startDate.setHours(0, 0, 0, 0);
@@ -232,11 +126,12 @@ const logisticsOrderFeedPage = async (req, res) => {
 
         default:
           req.flash('warning', 'Invalid search field.');
-          return res.redirect('/runner/logisticsOrderFeed');
+          return res.status(200).redirect('/runner/logisticsOrderFeed');
       }
     }
 
-    const logisticsOrders = await LogisticsOrder.find(query)
+    const logisticsOrders = await LogisticsOrder
+      .find(query)
       .populate('createdByUser', 'username') // Populate the createdByUser field with the 'username' field
       .sort({ createdAt: 1 }) // Sort by createdAt in ascending order (oldest first)
       .skip(skip)
@@ -254,9 +149,11 @@ const logisticsOrderFeedPage = async (req, res) => {
 
     if (logisticsOrders.length === 0 && searchQuery) {
       req.flash('warning', `No logistics order found based on the input "${searchQuery}" for the field "${searchStatusField}" with "${searchField}".`);
+    } else if (logisticsOrders.length === 0) {
+      req.flash('warning', `No order feeds yet...`);
     }
 
-    res.render('runner/logisticsOrderFeed', {
+    res.status(200).render('runner/logisticsOrderFeed', {
       logisticsOrders,
       pagination,
       searchQuery,
@@ -279,11 +176,11 @@ const logisticsOrderDetailsPage = async (req, res) => {
       .populate('createdByUser', 'username');
 
     if (logisticsOrder) {
-      return res.render('runner/logisticsOrderDetails', { logisticsOrder })
+      return res.status(200).render('runner/logisticsOrderDetails', { logisticsOrder })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return res.redirect('/runner/logisticsOrderFeed');
+    return res.status(422).redirect('/runner/logisticsOrderFeed');
 
   } catch (error) {
     console.error(error);
@@ -319,12 +216,13 @@ const addToDeliveryList = async (req, res) => {
       req.flash('error', 'The logistics order is not found, try another.');
     }
 
-    res.redirect('/runner/logisticsOrderFeed');
+    res.status(201).redirect('/runner/logisticsOrderFeed');
 
   } catch (error) {
-    req.flash('error', error)
+    // req.flash('error', error)
     console.error(error);
-    res.status(500).render('somethingWrong');
+    // res.status(500).render('somethingWrong');
+    res.status(500).send('Internal Server Error');
   }
 };
 
@@ -334,14 +232,29 @@ const deliveryListPage = async (req, res) => {
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        status: 'Added to Delivery List'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -351,22 +264,15 @@ const deliveryListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Added to Delivery List') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
       req.flash('warning', 'Your "Delivery List" is empty, go add it from "Logistics Order Feed" it will show up here!');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -377,8 +283,7 @@ const deliveryListPage = async (req, res) => {
       totalPages: totalPages,
     };
 
-    // console.log(thisUserValidDeliveryList);
-    res.render('runner/deliveryList', {
+    res.status(200).render('runner/deliveryList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -388,8 +293,6 @@ const deliveryListPage = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
-    // req.flash('error', error)
-    // return res.redirect('somethingWrong');
   }
 };
 
@@ -403,8 +306,13 @@ const deliveryDetailsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Added to Delivery List' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -413,11 +321,11 @@ const deliveryDetailsPage = async (req, res) => {
       });
 
     if (delivery) {
-      return res.render('runner/deliveryDetails', { delivery })
+      return res.status(200).render('runner/deliveryDetails', { delivery })
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return redirect('/runner/deliveryList');
+    return res.status(422).redirect('/runner/deliveryList');
 
   } catch (error) {
     console.error(error);
@@ -441,7 +349,7 @@ const removeFromDeliveryList = async (req, res) => {
     await DeliveryList.findByIdAndDelete(delivery._id);
 
     req.flash('success', 'Remove from your "Delivery List" successfully!')
-    res.redirect('/runner/deliveryList');
+    return res.status(201).redirect('/runner/deliveryList');
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
@@ -456,7 +364,7 @@ const startDeliver = async (req, res) => {
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
         match: { status: 'Added to Delivery List' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark'
       })
       .populate({
         path: 'user_id',
@@ -466,7 +374,7 @@ const startDeliver = async (req, res) => {
 
     if (!thisUserDeliveryList.length) {
       req.flash('warning', 'Your "Start Deliver List" is empty, go add it from "Delivery List" it will show up here!');
-      return res.redirect('/runner/deliveryList');
+      return res.status(200).redirect('/runner/deliveryList');
     }
 
     for (let i = 0; i < thisUserDeliveryList.length; i++) {
@@ -491,7 +399,7 @@ const startDeliver = async (req, res) => {
 
     // console.log(thisUserValidDeliveryList);
     req.flash('success', 'Delivery mode is started, please ensure the traffic safety of yourself and others. Good luck!');
-    return res.redirect('/runner/startDeliverList');
+    return res.status(201).redirect('/runner/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -507,14 +415,29 @@ const startDeliverListPage = async (req, res) => {
     const perPage = 9; // Adjust this value based on your preference
     const skip = (page - 1) * perPage;
 
-    let thisUserValidDeliveryList = [];
+    const logisticsOrders = await LogisticsOrder
+      .find({
+        status: 'Delivery in Progress'
+      });
 
-    const thisUserDeliveryList = await DeliveryList.find({ user_id: req.user._id }, '_id')
+    // Get the IDs of these logistics orders
+    const logisticsOrderIds = logisticsOrders.map(order => order._id);
+
+    // Find delivery lists for the user and matching logistics orders
+    const thisUserValidDeliveryList = await DeliveryList
+      .find({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      })
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -524,23 +447,15 @@ const startDeliverListPage = async (req, res) => {
       .skip(skip)
       .limit(perPage);
 
-    for (let i = 0; i < thisUserDeliveryList.length; i++) {
-
-      const logisticsOrder = thisUserDeliveryList[i].logisticsOrder_id;
-
-      // Check if logisticsOrder is not null or undefined
-      if (logisticsOrder && logisticsOrder.status === 'Delivery in Progress') {
-        thisUserValidDeliveryList.push(thisUserDeliveryList[i]);
-      }
-
-    }
-
     if (!thisUserValidDeliveryList.length) {
-      req.flash('warning', 'Your "Start Delivery List" is empty, go click "Start deliver" at "Delivery List" it will show up here!');
-      return res.redirect('/runner/deliveryList');
+      req.flash('warning', 'Your "Start Delivery List" is empty, go "Delivery List" and click "Start deliver" it will show up here.');
     }
 
-    const totalThisUserValidDeliveryList = await DeliveryList.countDocuments(thisUserValidDeliveryList);
+    const totalThisUserValidDeliveryList = await DeliveryList
+      .countDocuments({
+        user_id: req.user._id,
+        logisticsOrder_id: { $in: logisticsOrderIds }
+      });
 
     const totalPages = Math.ceil(totalThisUserValidDeliveryList / perPage);
 
@@ -552,7 +467,7 @@ const startDeliverListPage = async (req, res) => {
     };
 
     // console.log(thisUserValidDeliveryList);
-    return res.render('runner/startDeliverList', {
+    return res.status(200).render('runner/startDeliverList', {
       thisUserValidDeliveryList,
       pagination,
       page,
@@ -577,8 +492,13 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
       .populate({
         path: 'logisticsOrder_id',
         model: 'LogisticsOrder',
-        match: { status: 'Delivery in Progress' }, // Add the condition here
-        select: 'status description customerType customerName customerContact address paymentStatus paymentType paymentAmount deliveryType remark'
+        match: { status: 'Delivery in Progress' },
+        select: 'createdByUser status description customerType customerName customerContact address productQty paymentStatus paymentType paymentAmount deliveryType remark',
+        populate: {
+          path: 'createdByUser',
+          model: 'User',
+          select: 'username'
+        }
       })
       .populate({
         path: 'user_id',
@@ -586,12 +506,17 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
         select: 'username phone email role status'
       });
 
+    const CODPaymentAmount = delivery.logisticsOrder_id.paymentAmount;
+
     if (delivery) {
-      return res.render('runner/logisticsOrderDetailsAndActions', { delivery })
+      return res.status(200).render('runner/logisticsOrderDetailsAndActions',
+        {
+          delivery
+        });
     }
 
     req.flash('error', 'Something wrong, please try again...');
-    return redirect('/runner/startDeliverList');
+    return res.status(500).redirect('/runner/startDeliverList');
 
   } catch (error) {
     console.error(error);
@@ -601,9 +526,19 @@ const logisticsOrderDetailsAndActionsPage = async (req, res) => {
 
 const logisticsOrderDetailsAndActions = async (req, res) => {
   try {
+    const quantityBasedCommissionForNewCustomerAmount = 20;
+    const quantityBasedCommissionForRepeatOrderAmount = 30;
+    let totalCurrentLogisticOrderCommissionAmount = 0;
+
+    const deliveryCommissionAmount = 10;
+    let totalCurrentRunnerLogisticOrderCommissionAmount = 0;
+
     let isValid = true;
     const deliveryId = req.params.deliveryId;
-    const { status } = req.body;
+    const {
+      status,
+      receivedPayment
+    } = req.body;
 
     // Handle other updates for the LogisticsOrder (e.g., updating status, description, etc.)
     const allowedStatusValue = [
@@ -615,6 +550,11 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     if (!allowedStatusValue.includes(status)) {
       isValid = false;
       req.flash('error', 'Invalid status.');
+    }
+
+    if (receivedPayment && receivedPayment === 'none') {
+      isValid = false;
+      req.flash('error', 'Is "COD" payment type, please make sure you are reciving the payment!');
     }
 
     if (isValid) {
@@ -629,22 +569,66 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
           delivery.logisticsOrder_id,
           {
             status: status,
-          }
+          },
+          { new: true }
         );
 
+        if (status === 'Delivered Successfully') {
+          if (updatedStatus.customerType === 'New customer') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForNewCustomerAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
+
+          } else if (updatedStatus.customerType === 'Repeat Order') {
+            totalCurrentLogisticOrderCommissionAmount = updatedStatus.productQty * quantityBasedCommissionForRepeatOrderAmount;
+            totalCurrentRunnerLogisticOrderCommissionAmount = updatedStatus.productQty * deliveryCommissionAmount;
+          }
+
+          console.log("This is receivedPayment:", receivedPayment);
+
+          if (receivedPayment && (receivedPayment === 'yes' || receivedPayment === 'no')) {
+            const updatedDeliveryReceivedPayment = await DeliveryList.findByIdAndUpdate(
+              deliveryId,
+              {
+                receivedPayment: receivedPayment
+              }
+            );
+
+            await updatedDeliveryReceivedPayment.save();
+          }
+
+          const createDeliveryCommission = new DeliveryCommission({
+            delivery_id: delivery._id,
+            user_id: req.user._id,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentRunnerLogisticOrderCommissionAmount,
+          });
+
+          const createQuantityBasedCommission = new QuantityBasedCommission({
+            logisticsOrder_id: updatedStatus._id,
+            user_id: updatedStatus.createdByUser,
+            commissionStatus: 'Not Claimed',
+            commissionAmount: totalCurrentLogisticOrderCommissionAmount,
+          });
+
+          await createDeliveryCommission.save();
+          await createQuantityBasedCommission.save();
+        }
+
+
         await updatedStatus.save();
+
       } else {
 
         req.flash('error', 'Something wrong, please try again later or ask the order creator for help!');
-        return res.redirect('/runner/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+        return res.status(500).redirect('/runner/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
       };
 
       req.flash('success', 'Updated success!');
 
     } else {
 
-      req.flash('warning', 'The status field is invalid!');
-      return res.redirect('/runner/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
+      req.flash('warning', 'There are some field is invalid!');
+      return res.status(422).redirect('/runner/startDeliverList/logisticsOrderDetailsAndActions/' + deliveryId);
 
     }
 
@@ -653,7 +637,7 @@ const logisticsOrderDetailsAndActions = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 
-  return res.redirect('/runner/startDeliverList');
+  return res.status(201).redirect('/runner/startDeliverList');
 }
 
 module.exports = {
